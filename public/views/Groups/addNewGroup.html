@@ -1,0 +1,13 @@
+<div class="container">
+  <form name="groupForm">
+    <button class="btn" ng-disabled="groupForm.$invalid" ng-click="addGroup()">Add Group</button>
+    <button class="btn" ng-click="clear()">Clear All</button>
+    <button class="btn" ng-click="cancel()">Cancel</button>
+    </br></br>
+    <table>
+      <tr><td><label style="font-weight:normal;">Group Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="group.name" required></td></tr>
+      <tr><td><label style="font-weight:normal;">Description</label><textarea class="form-input" ng-model="group.description"></textarea></td></tr>
+    </table>
+    </br>
+  </form>
+</div>

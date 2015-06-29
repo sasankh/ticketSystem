@@ -1,0 +1,102 @@
+<div class="container">
+  <accordion>
+    <accordion-group heading="Ticket Detail Information" is-open=true>
+  <table>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Customer:&nbsp;{{ticket.customerName}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Prefered Customer Contact Method:&nbsp;{{ticket.contactMethod}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Notify Customer of Future Ticket Updates:&nbsp;{{ticket.customerNotifyFuture}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Assigned Team:&nbsp;{{ticket.assignedTeam}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Resolve Level:&nbsp;{{ticket.level}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Ticket Holder:&nbsp;{{ticket.holderName}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Ticket Title:&nbsp;{{ticket.ticketTitle}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Ticket:&nbsp;{{ticket.type}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label ng-if="ticket.priority=='1'"style="font-weight:normal;">Priority:&nbsp;Urgent</label>
+        <label ng-if="ticket.priority=='2'"style="font-weight:normal;">Priority:&nbsp;High</label>
+        <label ng-if="ticket.priority=='3'"style="font-weight:normal;">Priority:&nbsp;Medium</label>
+        <label ng-if="ticket.priority=='4'"style="font-weight:normal;">Priority:&nbsp;Low</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Ticket Location:&nbsp;{{ticket.ticketLocation}}</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Short Description:&nbsp;{{ticket.shortDescription}}</label>
+      </td>
+      <tr>
+        <td>
+          <label style="font-weight:normal;">Detail Description:&nbsp;{{ticket.detailDescription}}</label>
+        </td>
+      </tr>
+    </table>
+    </accordion-group>
+  </accordion>
+  </div>
+  <div class="container">
+    <table>
+      <tr>
+    <td><button class="btn" ng-click="addLog()">Add Log</button></td>
+    <td>&nbsp;</td>
+    <td><button class="btn" ng-click="emailCustomer()">Email Customer</button></td>
+  </tr>
+</table>
+    <tabset>
+      <tab heading="Ticket Logs">
+        <accordion close-others=false>
+          <accordion-group heading="Type: {{log.type}}&nbsp;&nbsp;&nbsp;&nbsp;By: {{log.by}}&nbsp;&nbsp;&nbsp;&nbsp;Date: {{log.date}}" ng-repeat="log in ticket.workLog.slice().reverse()" is-open=true>
+            {{log.content}}
+          </accordion-group>
+        </accordion>
+      </tab>
+      <tab heading="Internal Update Logs">
+        <accordion close-others=false>
+          <accordion-group ng-repeat="log in ticket.workLog.slice().reverse()" heading="Type: {{log.type}}&nbsp;&nbsp;&nbsp;&nbsp;By: {{log.by}}&nbsp;&nbsp;&nbsp;&nbsp;Date: {{log.date}}" ng-if="log.type == 'Internal'" is-open=true>
+            {{log.content}}
+          </accordion-group>
+        </accordion>
+      </tab>
+      <tab heading="Email Logs">
+        <accordion close-others=false>
+          <accordion-group ng-repeat="log in ticket.workLog.slice().reverse()" heading="Type: {{log.type}}&nbsp;&nbsp;&nbsp;&nbsp;By: {{log.by}}&nbsp;&nbsp;&nbsp;&nbsp;Date: {{log.date}}" ng-if="log.type == 'Email'" is-open=true>
+            {{log.content}}
+          </accordion-group>
+        </accordion>
+      </tab>
+    </tabset>
+  </div>

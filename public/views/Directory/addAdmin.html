@@ -1,0 +1,41 @@
+<div class="container">
+  <form name="userForm">
+    <button class="btn" ng-disabled="userForm.$invalid" ng-click="addUser()">Add User</button>
+    <button class="btn" ng-click="clear()">Clear All</button>
+    <button class="btn" ng-click="cancel()">Cancel</button>
+    </br></br>
+    <table>
+      <tr>
+        <td>
+          <label style="font-weight:normal;">Group: Admin<span style="color:red;">*</span></label>
+        </td>
+      </tr>
+      <tr><td><label style="font-weight:normal;">NU ID<span style="color:red;">*</span></label><input class="form-input" ng-model="person.NUID" required></td></tr>
+      <tr><td><label style="font-weight:normal;">Username<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="admin.username" required></td></tr>
+      <tr><td><label style="font-weight:normal;">Password<span style="color:red;">*</span></label><input class="form-input" type="password" ng-model="admin.password" required></td></tr>
+          <tr><td><label style="font-weight:normal;">Re-type Password<span style="color:red;">*</span></label><input class="form-input" type="password" ng-model="retype.password" required></td></tr>
+      <tr>
+        <td><label  style="font-weight:normal;">First Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.fname" required></td>
+        <td><label style="font-weight:normal;">Last Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.lname" required></td>
+      </tr>
+      <tr><td><label style="font-weight:normal;">Title<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.title" required></td></tr>
+      <tr>
+        <td><label style="font-weight:normal;">Email<span style="color:red;">*</span></label><input class="form-input" ng-model="person.email" required></td>
+        <td><label style="font-weight:normal;">Number<span style="color:red;">*</span></label><input class="form-input" ng-model="person.number" required></td>
+      </tr>
+      <tr>
+        <td><label style="font-weight:normal;">Department Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.departmentname" required></td>
+        <td><label style="font-weight:normal;">Room<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.location" required></td>
+      </tr>
+      <tr>
+        <td><label style="font-weight:normal;">Building Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.bName" required></td>
+        <td><label style="font-weight:normal;">College<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.college" required></td>
+      </tr>
+      <tr><td><label style="font-weight:normal;">Note<span style="color:red;">*</span></label><input class="form-input" ng-model="person.note" required></td></tr>
+    </table>
+    </br>
+    <button class="btn" ng-disabled="userForm.$invalid" ng-click="addUser()">Add User</button>
+    <button class="btn" ng-click="clear()">Clear All</button>
+    <button class="btn" ng-click="cancel()">Cancel</button>
+  </form>
+</div>

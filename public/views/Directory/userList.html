@@ -1,0 +1,78 @@
+<div class="container">
+  <table>
+    <tr>
+      <td><label style="font-weight:normal;">Search<input class="form-search" type ="text" ng-model="search.$"></label></td>
+    </tr>
+    <tr>
+      <td><button class='btn' ng-click="advanceSearch = !advanceSearch">Advance Search</button></br></td>
+    </tr>
+  </table>
+  <div collapse = "advanceSearch">
+    <div class="well well-lg">
+      <table>
+        <tr>
+          <td style="padding-right : 25px">First Name <input class="form-input" type ="text" ng-model="search.fname"></td>
+          <td style="padding-right : 25px">Last Name <input class="form-input" type ="text" ng-model="search.lname"></td>
+          <td style="padding-right : 25px">Username <input class="form-input" type ="text" ng-model="search.username"></td>
+          <td style="padding-right : 25px">NUID <input class="form-input" type ="text" ng-model="search.NUID"></td>
+          <td style="padding-right : 25px">Email <input class="form-input" type ="text" ng-model="search.email"></td>
+          <td>Group: <input class="form-input" type ="text" ng-model="search.group"></td>
+        </tr>
+        <tr>
+          <td style="padding-right : 25px; padding-top : 8px">Number <input class="form-input" type ="text" ng-model="search.number"> </td>
+          <td style="padding-right : 25px; padding-top : 8px">Department <input class="form-input" type ="text" ng-model="search.departmentname"></td>
+          <td style="padding-right : 25px; padding-top : 8px">Location <input class="form-input" type ="text" ng-model="search.location"></td>
+          <td style="padding-right : 25px; padding-top : 8px">Building Name <input class="form-input" type ="text" ng-model="search.bName"></td>
+          <td style="padding-right : 25px; padding-top : 8px">College <input class="form-input" type ="text" ng-model="search.college"></td>
+          <td>&nbsp;</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  </br>
+  <table>
+    <tr>
+      <td>Items per Page: <input class="form-input" type ="text" ng-model="itemsPerPage"></td>
+    </tr>
+  </table>
+  <table class="table" style="text-align: center">
+    <thead>
+      <tr colspan="3">
+        <div class="pagination">
+          <td ng-class="prevPageDisabled()">
+            <button class='btn' ng-click="prevPage()">« Prev</button>
+          </td>
+          <td>&nbsp;</td>
+          <td><button class='btn' ng-click="showAll()">Show All</button></td>
+          <td>&nbsp;</td>
+          <td ng-class="nextPageDisabled()">
+            <button class='btn' ng-click="nextPage()">Next »</button>
+          </td>
+        </div>
+      </tr>
+      <tr>
+        <th ng-click="reverse=!reverse;order('fname', reverse)" style="cursor:pointer; text-align: center;">&nbsp;Name&nbsp;</th>
+        <th ng-click="reverse=!reverse;order('-NUID', reverse)" style="cursor:pointer; text-align: center;">NUID</th>
+        <th ng-click="reverse=!reverse;order('email', reverse)" style="cursor:pointer; text-align: center;">EMAIL</th>
+        <th ng-click="reverse=!reverse;order('-group', reverse)" style="cursor:pointer; text-align: center;">Group</th>
+        <th style="text-align: center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="person in listDirectory | filter:search | offset: currentPage*itemsPerPage | limitTo: itemsPerPage">
+        <td>{{person.fname}} {{person.lname}}</td>
+        <td>{{person.NUID}}</td>
+        <td>{{person.email}}</td>
+        <td>{{person.group}}</td>
+        <td class="dropdown">
+          <button class="btn" type="button" id="menu1" data-toggle="dropdown">Action <span class="caret"></span></button>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+            <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="details(person._id)">Details</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="edit(person._id)">Edit</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="remove(person._id)">Remove</a></li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

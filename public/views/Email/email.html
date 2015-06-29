@@ -1,0 +1,12 @@
+<div class="container">
+  <form name="emailForm">
+  </br>
+    <table>
+      <tr><td><input class="form-input" type="email" placeholder="Recipients" ng-model="email.to" required></td></tr>
+      <tr><td><input class="form-input" placeholder="Subject" ng-model="email.subject" required></td></tr>
+      <tr><td><textarea class="form-control custom-control" rows="10" cols="100" ng-model="email.message" required></textarea></td></tr>
+    </table>
+    </br>
+    <button class="btn" ng-disabled="emailForm.$invalid" ng-click="send()">Send</button>
+  </form>
+</div>

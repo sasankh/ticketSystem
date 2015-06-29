@@ -1,0 +1,91 @@
+<div>
+  <tabset>
+    <tab heading="All Tickets">
+      <table class="table" style="text-align: center">
+        <thead>
+          <tr>
+            <th style="text-align: center">Holder</th>
+            <th style="text-align: center">Customer</th>
+            <th style="text-align: center">Title</th>
+            <th style="text-align: center">State</th>
+            <th style="text-align: center">Priority</th>
+            <th style="text-align: center">Assigned Team</th>
+            <th style="text-align: center">Due Date</th>
+            <th style="text-align: center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="ticket in listTicket ">
+            <td>{{ticket.holderName}}</td>
+            <td class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" style="cursor:pointer">{{ticket.customerName}}<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a ng-click="openCustomerInfo(ticket.customerID)" style="cursor:pointer;">View Details</a></li>
+                <li role="presentation" class="divider"></li>
+                <li><a ng-click="emailCustomer(ticket.customerID, ticket._id, ticket.customerName)" style="cursor:pointer;">Send Email</a></li>
+              </ul>
+            </td>
+            <td><button popover={{ticket.shortDescription}} popover-placement="right" popover-trigger="mouseenter" style="cursor:default;background-color:white;border:none">{{ticket.ticketTitle}}</button></td>
+            <td>{{ticket.ticketState}}</td>
+            <td>{{ticket.priority}}</td>
+            <td>{{ticket.assignedTeam}}</td>
+            <td>{{ticket.dDate | date:'mediumDate'}}</td>
+            <td class="dropdown">
+              <button class="btn" type="button" id="menu1" data-toggle="dropdown">Action <span class="caret"></span></button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="details(ticket._id)">Details</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="edit(ticket._id)">Edit</a></li>
+                <li ng-if="ticket.holderName == 'OPEN'" role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="grab(ticket._id)">Grab</a></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </tab>
+
+  <!--Exp-->
+
+    <tab heading="tab for experiemnt and test">
+      <table class="table" style="text-align: center">
+        <thead>
+          <tr>
+            <th style="text-align: center">Holder</th>
+            <th style="text-align: center">Customer</th>
+            <th style="text-align: center">Title</th>
+            <th style="text-align: center">State</th>
+            <th style="text-align: center">Priority</th>
+            <th style="text-align: center">Assigned Team</th>
+            <th style="text-align: center">Due Date</th>
+            <th style="text-align: center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="ticket in listTicket">
+            <td>{{ticket.holderName}}</td>
+            <td class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" style="cursor:pointer">{{ticket.customerName}}<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a ng-click="openCustomerInfo(ticket.customerID)" style="cursor:pointer;">View Details</a></li>
+                <li role="presentation" class="divider"></li>
+                <li><a ng-click="emailCustomer(ticket.customerID, ticket._id, ticket.customerName)" style="cursor:pointer;">Send Email</a></li>
+              </ul>
+            </td>
+            <td><button popover={{ticket.shortDescription}} popover-placement="right" popover-trigger="mouseenter" style="cursor:default;background-color:white;border:none">{{ticket.ticketTitle}}</button></td>
+            <td>{{ticket.ticketState}}</td>
+            <td>{{ticket.priority}}</td>
+            <td>{{ticket.assignedTeam}}</td>
+            <td>{{ticket.dDate | date:'mediumDate'}}</td>
+            <td class="dropdown">
+              <button class="btn" type="button" id="menu1" data-toggle="dropdown">Action <span class="caret"></span></button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="details(ticket._id)">Details</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="edit(ticket._id)">Edit</a></li>
+                <li ng-if="ticket.holderName == 'OPEN'" role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="grab(ticket._id)">Grab</a></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </tab>
+  </tabset>
+</div>
