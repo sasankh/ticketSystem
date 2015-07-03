@@ -1,0 +1,26 @@
+<div class="container">
+  <div ng-if="status">
+    <form name="disableForm">
+      <table style="font-weight:normal">
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>Are you sure you want to disable the user account?</td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>I confirm&nbsp;<span style="color:red;">*</span>&nbsp;<input type="checkbox" ng-model="disableConfirm" ng-true-value="true" ng-false-value="false" required></td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td><button class="btn" ng-disabled="disableForm.$invalid" ng-click="disable(disableConfirm)">Disable Account</button></td></tr>
+    </table>
+    </form>
+  </div>
+  <div ng-if="status == false">
+    <form name="activateForm">
+      <table style="font-weight:normal">
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>Are you sure you want to activate the user account?</td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>I confirm&nbsp;<span style="color:red;">*</span>&nbsp;<input type="checkbox" ng-model="activateConfirm" ng-true-value="true" ng-false-value="false" required></td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td><button class="btn" ng-disabled="activateForm.$invalid" ng-click="activate(activateConfirm)">Activate Account</button></td></tr>
+    </table>
+    </form>
+  </div>
+</div>

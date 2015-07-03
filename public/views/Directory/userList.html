@@ -69,7 +69,8 @@
           <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
             <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="details(person._id)">Details</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="edit(person._id)">Edit</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="remove(person._id)">Remove</a></li>
+            <li ng-if="person.group != 'Admin'" role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="remove(person._id)">Remove</a></li>
+            <li ng-if="person.group == 'Admin'" role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="activateDisable(person._id)">Activate\Disable</a></li>
           </ul>
         </td>
       </tr>

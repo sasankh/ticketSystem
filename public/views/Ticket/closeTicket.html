@@ -1,0 +1,30 @@
+<div class="container">
+  <form name="closeLog">
+  </br>
+    <table>
+      <tr><td><label>Close Ticket: SYSTICKET{{ticketID}}ENDTICKET</label></td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          <label style="font-weight:normal;">Reason for closing<span style="color:red;">*</span></label>
+          <select class="form-input" ng-model="close.ticketState" required>
+            <option value="COMPLETED">Completed</option>
+            <option value="DISMISSED">Dismissed</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        </td>
+      </tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td><label style="font-weight:normal;">Please Enter Closing Comment</label></td></tr>
+      <tr><td><textarea class="form-control custom-control" rows="10" cols="118" ng-model="close.content" required></textarea></td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>
+      <label style="font-weight:normal;">Notify cutomer of ticket closing&nbsp;</label>
+      <input type="checkbox" ng-model="close.customerNotifyLog" ng-true-value="true" ng-false-value="false">
+    </td></tr>
+  </table>
+    </br>
+    <button class="btn" ng-disabled="closeLog.$invalid" ng-click="closeTicket()">Close Ticket</button>
+    <button class="btn" ng-click="cancel()">Cancel</button>
+  </form>
+</div>

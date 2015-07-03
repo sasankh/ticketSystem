@@ -1,0 +1,26 @@
+<div class="container">
+  <accordion close-others=false>
+    <accordion-group heading="Change User Password">
+      <form name="passwordForm">
+        <table>
+          <tr><td><label style="font-weight:normal;">Old Password: <span style="color:red;">*</span></label><input class="form-input" type="password" ng-model="passwords.old" required></td></tr>
+          <tr><td><label style="font-weight:normal;">New Password: <span style="color:red;">*</span></label><input class="form-input" type="password" ng-model="passwords.new" required></td></tr>
+          <tr><td><label style="font-weight:normal;">Retype New Password: <span style="color:red;">*</span></label><input class="form-input" type="password" ng-model="passwords.retype" required></td></tr>
+          <tr><td>&nbsp;</td></tr>
+        </table>
+        <button class="btn" ng-disabled="passwordForm.$invalid" ng-click="change()">Change</button>
+      </form>
+    </accordion-group>
+    <accordion-group heading="Disable Account" ng-if="ifOK">
+      <form name="disableForm">
+        <table style="font-weight:normal">
+        <tr><td>Once you disable the account you will not be able the activate it by yourself. Only other active Admins can do so.</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>I confirm&nbsp;<span style="color:red;">*</span><input type="checkbox" ng-model="disableConfirm" ng-true-value="true" ng-false-value="false" required></td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td><button class="btn" ng-disabled="disableForm.$invalid" ng-click="disable(disableConfirm)">Disable Account</button></td></tr>
+      </table>
+      </form>
+    </accordion-group>
+  </accordion>
+</div>

@@ -1,6 +1,7 @@
 <div class="container">
     <button class="btn" ng-click="edit()">Edit</button>
-    <button class="btn" ng-click="remove()">Remove</button>
+    <button class="btn" ng-if="person.group == 'Admin'" ng-click="activateDisable()">Activate\Disable</button>
+    <button ng-if="person.group != 'Admin'" class="btn" ng-click="remove()">Remove</button>
     <button class="btn" ng-click="cancel()">Cancel</button>
     </br></br>
     <table>
@@ -28,6 +29,7 @@
     </table>
     </br>
     <button class="btn" ng-click="edit()">Edit</button>
-    <button class="btn" ng-click="remove()">Remove</button>
+    <button class="btn" ng-if="person.group == 'Admin'" ng-click="activateDisable()">Activate\Disable</button>
+    <button ng-if="person.group != 'Admin'" class="btn" ng-click="remove()">Remove</button>
     <button class="btn" ng-click="cancel()">Cancel</button>
 </div>

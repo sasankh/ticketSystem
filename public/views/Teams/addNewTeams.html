@@ -1,0 +1,35 @@
+<div class="container">
+  <form name="teamForm">
+    </br>
+    <table>
+      <tr>
+        <td>
+          <ul>
+            <button class="btn" ng-disabled="teamForm.$invalid" ng-click="createTeam()">Create</button>
+            <button class="btn" ng-click="clear()">Clear All</button>
+            <button class="btn" ng-click="cancel()">Cancel</button>
+          </ul>
+          <ul><label style="font-weight:normal;">Team Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="team.name" required></ul>
+          <ul><label style="font-weight:normal;">Description<span style="color:red;">*</span></label><textarea class="form-control custom-control" rows="5" cols="50" ng-model="team.description" required></textarea></ul>
+        </td>
+      </tr>
+    </table>
+    </br>
+    <table class="table" style="text-align: center">
+      <thead>
+        <tr>
+          <th style="text-align: center">User</th>
+          <th style="text-align: center">Member</th>
+          <th style="text-align: center">Team Lead</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="user in listUsers">
+          <td>{{user.name}}</td>
+          <td><input type="checkbox" checklist-model="team.members" checklist-value="user"></td>
+          <td><input type="checkbox" checklist-model="team.leads" checklist-value="user"></td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+</div>

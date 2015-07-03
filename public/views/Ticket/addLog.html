@@ -2,8 +2,19 @@
   <form name="addLog">
   </br>
     <table>
+      <tr><td><label>Add Log to ticket: SYSTICKET{{ticketID}}ENDTICKET</label></td></tr>
+      <tr><td>&nbsp;</td></tr>
       <tr><td><textarea class="form-control custom-control" rows="10" cols="118" ng-model="update.content" required></textarea></td></tr>
-    </table>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>
+      <label style="font-weight:normal;">Notify cutomer of the update (Will be visible to customer)&nbsp;</label>
+      <input type="checkbox" ng-model="update.customerNotifyLog" ng-true-value="true" ng-false-value="false">
+    </td></tr>
+    <tr><td ng-if="!update.customerNotifyLog">
+    <label style="font-weight:normal;">Make the log visible to customer&nbsp;</label>
+    <input type="checkbox" ng-model="update.customerVisibleLog" ng-true-value="true" ng-false-value="false">
+    </td></tr>
+  </table>
     </br>
     <button class="btn" ng-disabled="addLog.$invalid" ng-click="add()">Add</button>
     <button class="btn" ng-click="cancel()">Cancel</button>

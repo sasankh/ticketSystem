@@ -9,22 +9,42 @@ ticket.controller('updateTicketController', updateTicketController);
 ticket.controller('selectCustomerForTicket', selectCustomerForTicket);
 ticket.controller('detailTicketController', detailTicketController);
 ticket.controller('addTicketLog',addTicketLog);
+ticket.controller('assignTeamListController', assignTeamListController);
+ticket.controller('closeTicketController', closeTicketController);
+
 //Create a new ticket
 function addNewTicket($scope, $http, $modal, $log){
-  $scope.ticket = {};
+//  $scope.ticket = {};
   $scope.animationsEnabled = true;
   $scope.customerNotifyCreation = false;
-  $scope.customerNotifyFuture = false;
+  $scope.leadList = [];
+
+
+  var refresh = function(){
+    $scope.ticket = {};
+    $scope.customerNotifyCreation = false;
+    $scope.teamList = "";
+    $http.get('/teamListForTicket').success(function(response){
+      $scope.leadList = new Array(response.length);
+      for(var x = 0; x < response.length; x++){
+        if(response[x].isLead){
+          $scope.leadList[x] = response[x].value;
+        }
+      }
+      $scope.teamList = response;
+    });
+  };
+
+  refresh();
 
     $scope.addTicket = function(){
       $scope.ticket.customerNotifyCreation = $scope.customerNotifyCreation;
-      $scope.ticket.customerNotifyFuture = $scope.customerNotifyFuture;
-      $scope.ticket.creatorID = $scope.ticket.customerID; //need to be chaged later after the login system is made.
+      if($scope.ticket.assignedTeam == 'OPEN'){
+        $scope.ticket.assignmentType = 'OPEN';
+      }
       $http.post('/addNewTicket', $scope.ticket).success(function(){
-            $scope.ticket = {};
-            $scope.customerNotifyCreation = false;
-            $scope.customerNotifyFuture = false;
-        });
+        refresh();
+      });
     };
 
     //Select Customer screen
@@ -44,14 +64,12 @@ function addNewTicket($scope, $http, $modal, $log){
 
     $scope.clear = function(){
         $scope.ticket = "";
-        $scope.customer = "";
         $scope.customerNotifyCreation = false;
-        $scope.customerNotifyFuture = false;
     };
 
     //Back button to list
     $scope.cancel = function(){
-        location.href= "#/Ticket";
+        location.href= "#/Ticket/view/All";
     };
 
     //Add New customer screen
@@ -119,10 +137,74 @@ function ticketListController($scope, $http, $modal, $log, $route, $routeParams,
       $http.get('/listTicket').success(function(response){
         $scope.listTicket = response;
         $scope.ticket="";
-    })
-   };
+      });
+      $http.get('/user').success(function(response){
+        $scope.controlUser = response.username;
+      });
+      $http.get('/getUserTeams').success(function(response){
+        $scope.leads = response.lead;
+        $scope.member = response.member;
+      });
+      //Keep an eye on this one
+      var whose = $routeParams.whose;
+      if (whose == "MyTickets"){
+        $scope.myActive = true;
+      }else{
+        $scope.allActive = true;
+      }
+    };
 
     refresh();
+
+    $scope.assignTicket = function(ticketID, assignedTeam){
+      //Select Customer screen
+        var modalInstance = $modal.open({
+          animation: $scope.animationsEnabled,
+          templateUrl: '/views/Ticket/assignTeamList.html',
+          controller: 'assignTeamListController',
+          size: 'lg',
+          resolve: {
+            team: function () {
+              return {assignedTeam:assignedTeam, ticketID:ticketID};
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+          refresh();
+        });
+    }
+
+    //close ticket
+    $scope.closeTicket = function(tID,cID){
+      var sendData = {ticketID:tID,customerID:cID};
+      var modalInstance = $modal.open({
+        animation: $scope.animationsEnabled,
+        templateUrl: '/views/Ticket/closeTicket.html',
+        controller: 'closeTicketController',
+        size: 'lg',
+        resolve: {
+          data: function () {
+            return sendData;
+          }
+        }
+      });
+      modalInstance.result.then(function () {
+        refresh();
+      });
+    }
+
+
+    //acknowledge ticket
+    $scope.acknowledge = function(id){
+      $http.put('/acknowledgeTicket/'+id).success(function(response){
+        if(response == 200){
+          refresh();
+        }else{
+          alert("Could not acknowledge the ticket");
+        }
+      });
+    }
 
     //view customer detail screen //all change done
     $scope.openCustomerInfo = function(sendID){
@@ -161,13 +243,87 @@ function ticketListController($scope, $http, $modal, $log, $route, $routeParams,
     };
 
     $scope.grab = function(id){
-        location.href= "#/Ticket/editTicket/" + id;
+      $http.put('/grabTicket/'+id).success(function(response){
+        if(response == 200){
+          refresh();
+        }else{
+          alert("Could not grab the ticket");
+        }
+      });
+    };
+
+    $scope.addLog = function(tID, cID){
+      var sendData = {ticketID:tID,customerID:cID};
+      var modalInstance = $modal.open({
+        animation: $scope.animationsEnabled,
+        templateUrl: '/views/Ticket/addLog.html',
+        controller: 'addTicketLog',
+        size: 'lg',
+        resolve: {
+          data: function () {
+            return sendData;
+          }
+        }
+      });
     };
 
     $scope.details = function(id){
       location.href = "#/Ticket/ticketDetail/" + id;
     };
 };
+
+//close ticket
+function closeTicketController($scope, $http, $modalInstance, data){
+
+
+  $scope.close = {};
+  $scope.ticketID = data.ticketID;
+  $scope.close.customerNotifyLog = false;
+  $scope.close.customerVisibleLog = true;
+
+  $scope.closeTicket = function(){
+    $scope.close.type = "Closing";
+    $scope.close.customerID = data.customerID;
+    $http.put('/closeTicket/' + data.ticketID, $scope.close).success(function(response){
+      if(response == 200){
+        $modalInstance.close();
+      }else{
+        alert("Could not close the ticket");
+      }
+    });
+  };
+
+  //Back button to list
+  $scope.cancel = function(){
+    $modalInstance.dismiss('cancel');
+  };
+
+}
+
+//assign team ticket controller
+function assignTeamListController($scope, $http, $modalInstance, team){
+
+  var refresh = function(){
+    $http.get("/getTeamMembers/" + team.assignedTeam).success(function(members){
+      $scope.memberList = members;
+    });
+  }
+
+  refresh();
+
+  $scope.assignUser = function(assignedUsername){
+    var holder = {holderName:assignedUsername};
+    $http.put('/assignTicketToUser/' + team.ticketID, holder).success(function(response){
+      if(response == 200){
+        $modalInstance.close();
+      }else{
+        alert("Could not assign the ticket");
+        $modalInstance.close();
+      }
+    });
+  }
+}
+
 
 //customer Detail from ticket list
 function viewCustomerDetailsController($scope, $http, $modal, $log, $modalInstance, displayID){
@@ -189,15 +345,25 @@ function viewCustomerDetailsController($scope, $http, $modal, $log, $modalInstan
 function updateTicketController($scope, $http, $routeParams, $modal, $log){
 
     var id = $routeParams.sendID;
-
-    var refresh = function(){$http.get('/obtainTicketInfo/' + id).success(function(response){
-        $scope.ticket = response;
+    $scope.leadList = [];
+    var refresh = function(){$http.get('/obtainTicketInfo/' + id).success(function(ticketInfo){
+        $scope.ticket = ticketInfo;
+        $scope.teamList = "";
+        $http.get('/teamListForTicket').success(function(response){
+          $scope.leadList = new Array(response.length);
+          for(var x = 0; x < response.length; x++){
+            if(response[x].isLead){
+              $scope.leadList[x] = response[x].value;
+            }
+          }
+          $scope.teamList = response;
+        });
     })};
 
     $scope.updateTicket = function(){
         $http.put('/updateTicketInfo/' + id, $scope.ticket).success(function(response){
             $scope.ticket = ""
-            location.href="#/Ticket";
+            location.href="#/Ticket/ticketDetail/" + id;
         });
     };
 
@@ -208,7 +374,7 @@ function updateTicketController($scope, $http, $routeParams, $modal, $log){
     }
 
     $scope.cancel = function(){
-        location.href= "#/Ticket";
+        location.href= "#/Ticket/view/All";
     };
 
     //Select Customer screen
@@ -291,10 +457,71 @@ function detailTicketController($scope, $http, $routeParams, $modal, $log, $rout
 
 
       var id = $routeParams.sendID;
+      $http.get('/user').success(function(response){
+        $scope.controlUser = response.username;
+      });
+      $http.get('/getUserTeams').success(function(response){
+        $scope.leads = response.lead;
+        $scope.member = response.member;
+      });
 
       var refresh = function(){$http.get('/obtainTicketInfo/' + id).success(function(response){
           $scope.ticket = response;
+          $scope.isCollapsed = false;
+          $scope.logData = {};
+          $scope.newLog = "";
+          $scope.logData.customerNotifyLog = false;
+          $scope.logData.customerVisibleLog = false;
       })};
+
+      //acknowledge ticket
+      $scope.acknowledge = function(){
+        $http.put('/acknowledgeTicket/'+id).success(function(response){
+          if(response == 200){
+            refresh();
+          }else{
+            alert("Could not acknowledge the ticket");
+          }
+        });
+      }
+
+      $scope.assignTicket = function(){
+        //Select Customer screen
+          var modalInstance = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: '/views/Ticket/assignTeamList.html',
+            controller: 'assignTeamListController',
+            size: 'lg',
+            resolve: {
+              team: function () {
+                return {assignedTeam:$scope.ticket.assignedTeam, ticketID:id};
+              }
+            }
+          });
+
+          modalInstance.result.then(function (assignedTo) {
+            refresh();
+          });
+      }
+
+      //close ticket
+      $scope.closeTicket = function(){
+        var sendData = {ticketID:id,customerID:$scope.ticket.customerID};
+        var modalInstance = $modal.open({
+          animation: $scope.animationsEnabled,
+          templateUrl: '/views/Ticket/closeTicket.html',
+          controller: 'closeTicketController',
+          size: 'lg',
+          resolve: {
+            data: function () {
+              return sendData;
+            }
+          }
+        });
+        modalInstance.result.then(function () {
+          location.href = "#/Ticket/view/All"
+        });
+      }
 
       //Edit button
       $scope.edit = function(){
@@ -303,24 +530,26 @@ function detailTicketController($scope, $http, $routeParams, $modal, $log, $rout
 
       refresh();
 
+      //edit ticket
+      $scope.editTicket = function(){
+          location.href= "#/Ticket/editTicket/" + id;
+      };
+
       //Add log
-      $scope.addLog = function(){
-        var modalInstance = $modal.open({
-          animation: $scope.animationsEnabled,
-          templateUrl: '/views/Ticket/addLog.html',
-          controller: 'addTicketLog',
-          size: 'lg',
-          resolve: {
-            sendID: function () {
-              return id;
-            }
+      $scope.addToLog = function(){
+        $scope.logData.type = "Internal";
+        $scope.logData.customerID = $scope.ticket.customerID;
+        if($scope.logData.customerNotifyLog == true){
+          $scope.logData.customerVisibleLog = true;
+        }
+        $http.post('/addTicketLog/' + id, $scope.logData).success(function(response){
+          if(response == 200){
+            refresh();
+          }else{
+            alert("Could not add the new log");
           }
         });
-
-        modalInstance.result.then(function () {
-          $route.reload();
-        });
-      };
+      }
 
       //email customer regarding the ticket
       $scope.emailCustomer = function(){
@@ -338,22 +567,57 @@ function detailTicketController($scope, $http, $routeParams, $modal, $log, $rout
             }
           });
           modalInstance.result.then(function () {
-            $route.reload();
+            refresh();
           });
+        });
+      };
+
+      //view customer detail screen //all change done
+      $scope.openCustomerInfo = function(sendID){
+        var modalInstance = $modal.open({
+          animation: $scope.animationsEnabled,
+          templateUrl: 'views/Ticket/customerDetails.html',
+          controller: 'viewCustomerDetailsController',
+          resolve: {
+            displayID: function () {
+              return sendID;
+            }
+          }
+        });
+      };
+
+      //grab the ticket
+      $scope.grab = function(){
+        $http.put('/grabTicket/'+id).success(function(response){
+          if(response == 200){
+            refresh();
+          }else{
+            alert("Could not grab the ticket");
+          }
         });
       };
 };
 
 //Add new group controller
-function addTicketLog($scope, $http, $modalInstance, sendID){
+function addTicketLog($scope, $http, $modalInstance, data){
 
-    console.log(sendID);
+    $scope.update = {};
+    $scope.ticketID = data.ticketID;
+    $scope.update.customerNotifyLog = false;
+    $scope.update.customerVisibleLog = false;
 
     $scope.add = function(){
-      $scope.update.by = "558a25aa74a1d3fb1e0edcfd";
       $scope.update.type = "Internal";
-      $http.post('/addTicketLog/' + sendID, $scope.update).success(function(response){
-        $modalInstance.close();
+      if($scope.update.customerNotifyLog == true){
+        $scope.update.customerVisibleLog = true;
+      }
+      $scope.update.customerID = data.customerID;
+      $http.post('/addTicketLog/' + data.ticketID, $scope.update).success(function(response){
+        if(response == 200){
+          $modalInstance.close();
+        }else{
+          alert("Could not grab the ticket");
+        }
       });
     };
 

@@ -5,9 +5,17 @@
     <button class="btn" ng-click="cancel()">Cancel</button>
     </br></br>
     <table>
-        <tr><td><label style="font-weight:normal;">Group<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.group" required></td></tr>
-        <tr><td><label style="font-weight:normal;">NU ID</label><input class="form-input" type="number" min="0" ng-model="person.NUID"></td></tr>
-        <tr><td><label style="font-weight:normal;">Username</label><input class="form-input" type="text" ng-model="person.username"></td></tr>
+      <tr ng-if="person.group != 'Admin'">
+        <td>
+          <label style="font-weight:normal;">Group<span style="color:red;">*</span></label>
+          <select class="form-input" ng-model="person.group" required>
+            <option ng-if="group.name != 'Admin'" ng-repeat="group in listGroup" value={{group.name}}>{{group.name}}</option>
+          </select>
+        </td>
+      </tr>
+        <tr ng-if="person.group == 'Admin'"><td><label style="font-weight:normal;">Group<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.group" readonly required></td></tr>
+        <tr><td><label style="font-weight:normal;">NU ID</label><input class="form-input" ng-model="person.NUID"></td></tr>
+        <tr ng-if="person.group != 'Admin'"><td><label style="font-weight:normal;">Username</label><input class="form-input" type="text" ng-model="person.username"></td></tr>
         <tr>
             <td><label style="font-weight:normal;">First Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.fname" required></td>
             <td><label style="font-weight:normal;">Last Name<span style="color:red;">*</span></label><input class="form-input" type="text" ng-model="person.lname" required></td>

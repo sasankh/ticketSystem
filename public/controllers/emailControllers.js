@@ -23,7 +23,6 @@ function internalEmailController($scope, $http, $modal, $log, $modalInstance, da
     $scope.email.to = data.email;
     $scope.email.subject = $scope.subject;
     $scope.email.ticketID = data.subject;
-    $scope.email.by = "558a25aa74a1d3fb1e0edcfd";
     $http.post('/ticketComposerEmail', $scope.email).success(function(){
       $modalInstance.close();
     });

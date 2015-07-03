@@ -63,8 +63,11 @@ passport.serializeUser(function(user, done){
 
 passport.deserializeUser(function(id, done){
   //Query database or cache here
-  done(null, {id: id, name: id});
+  dbAdmin.getAdminUsername(id, function(userName){
+    done(null, {id:id, username: userName});
+  });
 });
+
 //for ejs
 function ensureAuthenticated(req, res, next){
   if(req.isAuthenticated()){
@@ -79,14 +82,14 @@ function ensureAngularAuthenticated(req, res, next){
   if(req.isAuthenticated()){
     next();
   }else{
-    res.send(403);
+    res.sendStatus(401);
+//    res.send(401);
   }
 }
 
 app.get('/', function(req, res){
   res.render('index',{
-    isAuthenticated: req.isAuthenticated(),
-    user: req.user
+    isAuthenticated: req.isAuthenticated()
   });
 });
 
@@ -100,12 +103,20 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/main', ensureAuthenticated, function(req,res){
-  res.render('main');
+  res.render('main',{
+    controlUser: req.user.username
+  });
 });
 
 app.post('/login', passport.authenticate('local'), function(req,res){
   res.redirect('/main');
 });
+
+//get currentuser
+app.get('/user', ensureAngularAuthenticated, function(req, res){
+  res.json(req.user);
+});
+
 
 //Functions
 //Directroy server side functions
@@ -115,6 +126,8 @@ app.post('/addAdmin', ensureAngularAuthenticated, dbAdmin.addAdmin);
 app.delete('/removeFromDirectory/:id', ensureAngularAuthenticated, dbDirectory.removeFromDirectory);
 app.get('/obtainUserInfo/:id', ensureAngularAuthenticated, dbDirectory.obtainUserInfo);
 app.put('/updateUserInfo/:id', ensureAngularAuthenticated, dbDirectory.updateUserInfo);
+app.get('/adminStatus/:id', ensureAngularAuthenticated, dbAdmin.adminStatus);
+app.get('/getdirectoryID/:username', ensureAngularAuthenticated, dbDirectory.getdirectoryID);
 
 //ticket server side function
 app.get('/listTicket', ensureAngularAuthenticated, dbTicket.listTicket);
@@ -122,6 +135,11 @@ app.post('/addNewTicket', ensureAngularAuthenticated, dbTicket.addNewTicket);
 app.get('/obtainTicketInfo/:id', ensureAngularAuthenticated, dbTicket.obtainTicketInfo);
 app.put('/updateTicketInfo/:id', ensureAngularAuthenticated, dbTicket.updateTicketInfo);
 app.post('/addTicketLog/:id', ensureAngularAuthenticated, dbTicket.addTicketLog);
+app.put('/grabTicket/:id', ensureAngularAuthenticated, dbTicket.grabTicket);
+app.put('/acknowledgeTicket/:id', ensureAngularAuthenticated, dbTicket.acknowledgeTicket);
+app.put('/assignTicketToUser/:id', ensureAngularAuthenticated, dbTicket.assignTicketToUser);
+app.put('/closeTicket/:id', ensureAngularAuthenticated, dbTicket.closeTicket);
+
 
 //typeahead and check serverside function
 //typeahead
@@ -140,6 +158,23 @@ app.post('/ticketComposerEmail', ensureAngularAuthenticated, sendEmail.ticketCom
 app.get('/listGroups', ensureAngularAuthenticated, extra.listGroups);
 app.post('/addNewGroup', ensureAngularAuthenticated, extra.addNewGroup);
 
+//check user password
+app.put('/changePassword', ensureAngularAuthenticated, dbAdmin.changePassword);
+app.put('/disableAccount', ensureAngularAuthenticated, dbAdmin.disableAccount);
+app.put('/disableOtherAccount/:id', ensureAngularAuthenticated, dbAdmin.disableOtherAccount);
+app.put('/activateOtherAccount/:id', ensureAngularAuthenticated, dbAdmin.activateOtherAccount);
+
+//get users for team
+app.get('/getUsersForTeam', ensureAngularAuthenticated, dbAdmin.getUsersForTeam);
+app.post('/createTeam', ensureAngularAuthenticated, dbAdmin.createTeam);
+app.get('/getTeamList', ensureAngularAuthenticated, dbAdmin.getTeamList);
+app.get('/getTeamInfo/:id', ensureAngularAuthenticated, dbAdmin.getTeamInfo);
+app.put('/updateTeamInfo/:id', ensureAngularAuthenticated, dbAdmin.updateTeamInfo);
+app.put('/activateTeam/:id', ensureAngularAuthenticated, dbAdmin.activateTeam);
+app.put('/disableTeam/:id', ensureAngularAuthenticated, dbAdmin.disableTeam);
+app.get('/teamListForTicket', ensureAngularAuthenticated, dbAdmin.teamListForTicket);
+app.get('/getUserTeams', ensureAngularAuthenticated, dbAdmin.getUserTeams);
+app.get('/getTeamMembers/:team', ensureAngularAuthenticated, dbAdmin.getTeamMembers);
 
 //server ports
 app.listen(3000);

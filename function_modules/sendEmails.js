@@ -35,7 +35,8 @@ function sendComposerEmail(req, res){
 function ticketComposerEmail(req, res){
 	sendEmail(req, function(){
 		var id = req.body.ticketID;
-	  var log = {type:"Email", date: new Date(), by:req.body.by, content:req.body.message};
+		req.body.by = req.user.username;
+	  var log = {type:"Email", date: new Date(), by:req.user.username, content:req.body.message, customerNotifyLog:true, customerVisibleLog:false};
     dbTicket.enterLog(id, log, function(doc){
 			req.body.kind = "Internal";
 			db.emailLog.insert(req.body,function(err, docs){
@@ -45,10 +46,25 @@ function ticketComposerEmail(req, res){
 	});
 }
 
+//internal notify email
+function notifyEmail(req, callback){
+	transporter.sendMail({
+		from: 'systemticket007@gmail.com',
+		to: req.to,
+		subject: req.subject,
+		text: req.message
+	});
+	db.emailLog.insert(req,function(err, docs){
+		console.log("added");
+	});
+	callback();
+}
+
 //export function
 module.exports.emailConformation = emailConformation;
 module.exports.sendComposerEmail = sendComposerEmail;
 module.exports.ticketComposerEmail = ticketComposerEmail;
+module.exports.notifyEmail = notifyEmail;
 
 function sendEmail(req, callback){
 	transporter.sendMail({

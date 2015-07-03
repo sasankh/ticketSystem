@@ -30,12 +30,6 @@
           <input type="checkbox" ng-model="customerNotifyCreation" ng-true-value="true" ng-false-value="false">
         </td>
       </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Notify Customer of Future Ticket Updates?&nbsp;</label>
-          <input type="checkbox" ng-model="customerNotifyFuture" ng-true-value="true" ng-false-value="false">
-        </td>
-      </tr>
       <tr><td></br></td></tr>
       <tr><td class="inSeperator"></td></tr>
       <tr><td></br></td></tr>
@@ -43,41 +37,34 @@
         <td>
           <label style="font-weight:normal;">Assign Team<span style="color:red;">*</span></label>
           <select class="form-input" ng-model="ticket.assignedTeam" required>
-            <option value="OPEN">OPEN (Any team\individual can grab the ticket)</option>
-            <option value="System 1">System 1 (Manager: Sasankh )</option>
-            <option value="System 2">System 2 (Manager: Karla)</option>
-            <option value="System 3">System 3 (Manager: Asad)</option>
+            <option value="OPEN">OPEN (Any individual can grab the ticket)</option>
+            <option value="SELF">SELF (Assign ticket to myself)</option>
+            <option ng-repeat="team in teamList" value="{{team.value}}">{{team.display}}</option>
           </select>
         </td>
       </tr>
-      <tr>
+      <tr ng-if="ticket.assignedTeam != 'OPEN'">
         <td>
-          <label style="font-weight:normal;">Resolve Level<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.level" required>
-            <option value="Level 1">Level 1</option>
-            <option value="Level 2">Level 2</option>
-            <option value="Level 3">Level 3</option>
+          <label style="font-weight:normal;">Assignment Type<span style="color:red;">*</span></label>
+          <select class="form-input" ng-model="ticket.assignmentType" required>
+            <option ng-if="ticket.assignedTeam == 'SELF'" value="SELF">Self Assigned</option>
+            <option ng-if="ticket.assignedTeam != 'SELF'" value="OPEN">Open Ticket (Anyone in the team can grab the ticket)</option>
+            <option ng-if="ticket.assignedTeam != 'SELF'" value="LEAD ASSIGNED">Need to be assigned by Team Manager\Lead</option>
+            <option ng-if="leadList.indexOf(ticket.assignedTeam) > -1" value="DIRECT ASSIGNMENT">Assign Directly to a member</option>
           </select>
         </td>
       </tr>
-      <tr>
+      <tr ng-if="ticket.assignmentType == 'DIRECT ASSIGNMENT'">
         <td>
-          <label style="font-weight:normal;">Ticket Type<span style="color:red;">*</span></label>
+          <label style="font-weight:normal;">Assign To<span style="color:red;">*</span></label>
           <select class="form-input" ng-model="ticket.holderName" required>
-            <option value="OPEN">Open Ticket (Anyone in the team can grab the ticket)</option>
-            <option value="TO BE ASSIGNED">Need to be assigned by Team Manager\Lead</option>
+            <option ng-repeat="member in teamList[leadList.indexOf(ticket.assignedTeam)].members" value="{{member.username}}">{{member.name}}</option>
           </select>
         </td>
       </tr>
       <tr><td></br></td></tr>
       <tr><td class="inSeperator"></td></tr>
       <tr><td></br></td></tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Ticket Title<span style="color:red;">*</span></label>
-          <input class="form-input"  placeholder="Required" ng-model="ticket.ticketTitle" required>
-        </td>
-      </tr>
       <tr>
         <td>
           <label style="font-weight:normal;">Ticket Type<span style="color:red;">*</span></label>
@@ -102,8 +89,12 @@
       </tr>
       <tr>
         <td>
-          <label style="font-weight:normal;">Ticket Location<span style="color:red;">*</span></label>
-          <input class="form-input"  placeholder="Required" ng-model="ticket.ticketLocation" required>
+          <label style="font-weight:normal;">Resolve Level<span style="color:red;">*</span></label>
+          <select class="form-input" ng-model="ticket.level" required>
+            <option value="Level 1">Level 1</option>
+            <option value="Level 2">Level 2</option>
+            <option value="Level 3">Level 3</option>
+          </select>
         </td>
       </tr>
       <tr>
@@ -115,6 +106,18 @@
               <button type="button" class="btn btn-default" ng-click="calenderOpen($event)"><i class="glyphicon glyphicon-calendar"></i></button>
             </span>
           </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label style="font-weight:normal;">Ticket Location<span style="color:red;">*</span></label>
+          <input class="form-input"  placeholder="Required" ng-model="ticket.ticketLocation" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label style="font-weight:normal;">Ticket Title<span style="color:red;">*</span></label>
+          <input class="form-input"  placeholder="Required" ng-model="ticket.ticketTitle" required>
         </td>
       </tr>
       <tr>

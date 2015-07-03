@@ -15,9 +15,32 @@ function listDirectory(req, res){
 
 //add new user to Directory
 function addDirectory(req, res){
-  db.Directory.insert(req.body,function(err, docs){
-    res.json(docs);
+  //check and add user
+  db.Directory.count({username: req.body.username}, function(err, checkUser){
+    if(checkUser == 0){
+      db.Directory.count({NUID: req.body.NUID}, function(err, checkNUID){
+        if(checkNUID == 0){
+          db.Directory.count({email: req.body.email}, function(err, checkEmail){
+            if(checkEmail == 0){
+              db.Directory.insert(req.body,function(err, docs){
+                res.json(200);
+              });
+            }else{
+              res.json("Email");
+            }
+          });
+        }else{
+          res.json("NUID");
+        }
+      });
+    }else{
+      res.json("username");
+    }
   });
+/*
+  db.Directory.insert(req.body,function(err, docs){
+    res.json(200);
+  });*/
 }
 
 //remove user from Directory
@@ -37,6 +60,13 @@ function obtainUserInfo(req, res){
   });
 }
 
+//get directory id
+function getdirectoryID(req, res){
+  var userName = req.params.username;
+  db.Directory.findOne({username: userName}, function(err, doc){
+    res.json(doc._id);
+  });
+}
 
 //update user info
 function updateUserInfo(req, res){
@@ -90,6 +120,7 @@ module.exports.addDirectory = addDirectory;
 module.exports.removeFromDirectory = removeFromDirectory;
 module.exports.obtainUserInfo = obtainUserInfo;
 module.exports.updateUserInfo = updateUserInfo;
+module.exports.getdirectoryID = getdirectoryID;
 
 //typeahead export
 module.exports.lookCustomers = lookCustomers;

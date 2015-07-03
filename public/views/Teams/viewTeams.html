@@ -1,0 +1,37 @@
+<div class="container">
+  <table>
+    <tr>
+      <td><label style="font-weight:normal;">Search<input class="form-search" type ="text" ng-model="search"></label></td>
+    </tr>
+  </table>
+  </br>
+  <button class="btn" ng-click="createNewTeam()">Create Team</button>
+  <table class="table" style="text-align: center">
+    <thead>
+      <tr>
+        <th style="text-align: center">Team</th>
+        <th style="text-align: center">Team Leads</th>
+        <th style="text-align: center">Team Members</th>
+        <th style="text-align: center">Status</th>
+        <th style="text-align: center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="team in teamList | filter:search">
+        <td><button popover="Description: {{team.description}}" popover-placement="buttom" popover-trigger="mouseenter" style="cursor:default;background-color:white;border:none">{{team.name}}</button></td>
+        <td><ul ng-repeat="lead in team.leads" style="padding:0;margin:0;">{{lead.name}}</ul></td>
+        <td><ul ng-repeat="member in team.members" style="padding:0;margin:0;">{{member.name}}</ul></td>
+        <td ng-if="team.active">Active</td>
+        <td ng-if="!team.active">Disabled</td>
+        <td class="dropdown">
+          <button class="btn" type="button" id="menu1" data-toggle="dropdown">Action <span class="caret"></span></button>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+            <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="manageTeam(team._id)">Manage Team</a></li>
+            <li role="presentation" ng-if="!team.active"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="activate(team._id)">Activate Team</a></li>
+            <li role="presentation" ng-if="team.active"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="disable(team._id)">Disable Team</a></li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

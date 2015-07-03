@@ -2,8 +2,8 @@ var MailListener = require("mail-listener2");
 var dbTicket = require('./ticketFunction');
 
 var mailListener = new MailListener({
-  username: "email@gmail.com", //enter email here
-  password: "password",  //enter password here
+  username: "email@gmail.com",
+  password: "password",
   host: "imap.gmail.com",
   port: 993, // imap port
   tls: true,
