@@ -1,6 +1,6 @@
 1) Used  MEAN stack.
 
-2)There is a 'test' mongodbdump in the 'db' folder. Perforem a 'monogrestore' of the 'test' database.
+2)There is a 'test' mongodbdump in the 'db' folder. Perforem a 'mongrestore' of the 'test' database.
 
 3) Perform "npm install".
 
@@ -12,8 +12,10 @@
 
 7) Progress video are as available below:
 
-  a)Directory
-    https://www.youtube.com/watch?v=SbbZTaL48w8&list=PLWkBKvqBsDZnoUakEcl1uR-_a7Fd1iuiQ
+  a) Explains the features of the system
 
-  b)Ticket
-    https://www.youtube.com/watch?v=isG5fR744zg&index=2&list=PLWkBKvqBsDZnoUakEcl1uR-_a7Fd1iuiQ
+    https://www.youtube.com/watch?v=TyZsrxnUchg&index=3&list=PLWkBKvqBsDZnoUakEcl1uR-_a7Fd1iuiQ
+
+  b) Includes the features missed to explained in the fist video
+
+    https://www.youtube.com/watch?v=0xD6wJLRnsM&list=PLWkBKvqBsDZnoUakEcl1uR-_a7Fd1iuiQ&index=4
