@@ -193,7 +193,7 @@ function addTicketLog(req, res){
     if(doc.ok){
       if(req.body.customerNotifyLog){
         dbDirectory.getUserEmailInternal(req.body.customerID, function(customerInfo){
-          var emailData = {"by":req.user.username, "kind":"Internal","to":customerInfo.email, "subject":"Update regarding ticket: SYSTEM"+id+"ENDTICKET","message":req.body.content, "ticketID":id};
+          var emailData = {"by":req.user.username, "kind":"Internal","to":customerInfo.email, "subject":"Update regarding ticket: SYSTICKET"+id+"ENDTICKET","message":req.body.content, "ticketID":id};
           sendEmails.notifyEmail(emailData, function(){
             res.json(200);
           });
@@ -216,7 +216,7 @@ function closeTicket(req, res){
       db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)}, update: {$set: {closerID: req.user.id, closerName: req.user.id, ticketState: req.body.ticketState, active:false}}, new: true}, function(err, doc){
         if(req.body.customerNotifyLog){
           dbDirectory.getUserEmailInternal(req.body.customerID, function(customerInfo){
-            var emailData = {"by":req.user.username, "kind":"Closing","to":customerInfo.email, "subject":"Ticket: SYSTEM"+id+"ENDTICKET " + req.body.ticketState,"message":"This is to let you know that the ticket (SYSTEM"+id+"ENDTICKET) has been " + req.body.ticketState + " and closed with the closing comment: ---"+req.body.content+" ---. Thank You.", "ticketID":id};
+            var emailData = {"by":req.user.username, "kind":"Closing","to":customerInfo.email, "subject":"Ticket: SYSTICKET"+id+"ENDTICKET " + req.body.ticketState,"message":"This is to let you know that the ticket (SYSTICKET"+id+"ENDTICKET) has been " + req.body.ticketState + " and closed with the closing comment: ---"+req.body.content+" ---. Thank You.", "ticketID":id};
             sendEmails.notifyEmail(emailData, function(){
               res.json(200);
             });
