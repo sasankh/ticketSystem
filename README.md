@@ -1,4 +1,5 @@
-Note: FREE TO USE and TEST 
+Note: FREE TO USE and TEST
+
 Script to auto create the database, and a page to enter the ip, dns and email's (username and password) will be available in the final product.
 Along with the script to turn the system into a service in the host so that it restarts automatically at system start.
 Feel free to use and comment.:)
@@ -24,7 +25,7 @@ password: "maytheforcebewithyou"     //you can change the password
 
 7) There is a default user "theforce" with password "maytheforcebewithyou". You can create new admin and use them. SSL is enabled. Replace the ssl key with your own if desired in 'sslKey' folder. Make sure the names are the same for now. I will make it changable through browser later. Currently the password is placed in plane text and is not encrypted.
 
-8) Open chat area and individual chat are available. I have not made the individual chat video yet. It can be initiated by clicking on the user on the 'online user' section. The "View Ticket" section auto updates itself when changes are made to the ticket. Every task done to the ticket from its activation, modification (including what parameter was changed to what by whom and when), transfer, acknowledgement, approval , closing are clogged in the ticket and can be viewed.
+8) Open chat area and individual chat are available. I have not made the individual chat video yet. It can be initiated by clicking on the user on the 'online user' section. The "View Ticket" section auto updates itself when changes are made to the ticket. Every task done to the ticket from its activation, modification (including what parameter was changed to what by whom and when), transfer, acknowledgement, approval , closing is logged in the ticket and can be viewed.
 
 9) Progress videos with the consecutively explanation of features are available below till the open chat feature:
 
