@@ -51,7 +51,7 @@ function publicChat(publicChat){
       //emit all messages
       col.find().limit(100).sort({_id:1}).toArray(function(err, res){
         if(err) throw err;
-        publicChat.emit('output', res);
+        socket.emit('output', res);
       });
 
       //wait for input
