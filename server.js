@@ -1,25 +1,27 @@
-//mostly for ssl
-/*var fs = require('fs');
-var https = require('https');*/
+//Ticket System
+var fs = require('fs');
+var https = require('https');
 
-//other requirement
+//original express
 var express = require('express');
 var app = express();
+
+//all original
 var path = require('path');
 var bodyParser = require('body-parser');
 
 //for passport
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
-
 var passport= require('passport');
 var passportLocal = require('passport-local');
+var MongoStore = require('connect-mongo')(expressSession); //session store
 
-//ssl server
-/*var server = https.createServer({
+//ssl
+var server = https.createServer({
   cert: fs.readFileSync(__dirname + '/sslKey/ticketSystem.crt'),
   key: fs.readFileSync(__dirname + '/sslKey/clientKey.key')
-}, app);*/
+}, app);
 
 //for functions
 var dbDirectory = require('./function_modules/directoryFunction');
@@ -28,6 +30,8 @@ var dbTicket = require('./function_modules/ticketFunction');
 var sendEmail = require('./function_modules/sendEmails');
 var getEmail = require('./function_modules/getEmails');
 var extra = require('./function_modules/extraFunctions');
+var socketConnect = require('./function_modules/socketFunction');
+var sessionStorage = new MongoStore({ url: 'mongodb://127.0.0.1/test', ttl: 1 * 24 * 60 * 60});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -41,9 +45,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(cookieParser());
 app.use(expressSession({
+  key: 'express.sid',
   secret: 'ticketSystem',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: { secure: true },
+  store: sessionStorage
   }));
 
 //passport codes
@@ -68,7 +75,27 @@ passport.deserializeUser(function(id, done){
   });
 });
 
-//for ejs
+//---------------------------------------------------------------------------
+//socket
+var io = require('socket.io')(server);
+var passportSocketIo = require("passport.socketio");
+var publicChat = io.of('/publicChat');
+var refresher = io.of('/refresher');
+socketConnect.publicChat(publicChat);
+socketConnect.refresher(refresher);
+
+//Socket Authentication
+io.use(passportSocketIo.authorize({
+  cookieParser: cookieParser,       // the same middleware you registrer in express
+  key:          'express.sid',       // the name of the cookie where express/connect stores its session_id
+  secret:       'ticketSystem',    // the session_secret
+  store:        sessionStorage,        // use sessionstore.
+  success:      socketConnect.onAuthorizeSuccess,  // *optional
+  fail:         socketConnect.onAuthorizeFail,     // *optional
+}));
+
+//-----------------------------------------------------------------------------
+
 function ensureAuthenticated(req, res, next){
   if(req.isAuthenticated()){
     next();
@@ -83,7 +110,6 @@ function ensureAngularAuthenticated(req, res, next){
     next();
   }else{
     res.sendStatus(401);
-//    res.send(401);
   }
 }
 
@@ -107,16 +133,50 @@ app.get('/main', ensureAuthenticated, function(req,res){
     controlUser: req.user.username
   });
 });
+//------------------------------------------------------------------------------
+//for one on one chat
 
+app.get('/privateMessage/:check',ensureAuthenticated, function(req, res){
+  var check = req.params.check;
+  var checkSplit = check.split("-");
+  if(checkSplit.length == 1){
+    var toUser = check;
+    socketConnect.checkActivePrivateRooms(io,req.user.username,toUser,function(chatRoom){
+      res.render('privateMessage',{
+        from: req.user.username,
+        to: toUser,
+        room: chatRoom
+      });
+    });
+  }else if(checkSplit.length == 2){
+    var toUser = "";
+    if(checkSplit[0] != req.user.username){
+      toUser = checkSplit[0];
+    }else{
+      toUser = checkSplit[1];
+    }
+    res.render('privateMessage',{
+      from: req.user.username,
+      to: toUser,
+      room: check
+    });
+  }else{
+    res.render('privateRoomNotAvailable');
+  }
+});
+
+//-------------------------------------------------------------------------
 app.post('/login', passport.authenticate('local'), function(req,res){
   res.redirect('/main');
 });
+
+//restricted files
+app.use(ensureAngularAuthenticated, express.static(path.join(__dirname,'restrictedFiles')));
 
 //get currentuser
 app.get('/user', ensureAngularAuthenticated, function(req, res){
   res.json(req.user);
 });
-
 
 //Functions
 //Directroy server side functions
@@ -131,6 +191,7 @@ app.get('/getdirectoryID/:username', ensureAngularAuthenticated, dbDirectory.get
 
 //ticket server side function
 app.get('/listTicket', ensureAngularAuthenticated, dbTicket.listTicket);
+app.get('/listDisableTicket', ensureAngularAuthenticated, dbTicket.listDisableTicket);
 app.post('/addNewTicket', ensureAngularAuthenticated, dbTicket.addNewTicket);
 app.get('/obtainTicketInfo/:id', ensureAngularAuthenticated, dbTicket.obtainTicketInfo);
 app.put('/updateTicketInfo/:id', ensureAngularAuthenticated, dbTicket.updateTicketInfo);
@@ -139,6 +200,13 @@ app.put('/grabTicket/:id', ensureAngularAuthenticated, dbTicket.grabTicket);
 app.put('/acknowledgeTicket/:id', ensureAngularAuthenticated, dbTicket.acknowledgeTicket);
 app.put('/assignTicketToUser/:id', ensureAngularAuthenticated, dbTicket.assignTicketToUser);
 app.put('/closeTicket/:id', ensureAngularAuthenticated, dbTicket.closeTicket);
+app.get('/getticketViewOptions', ensureAngularAuthenticated, dbAdmin.getticketViewOptions);
+app.put('/setticketViewOptions', ensureAngularAuthenticated, dbAdmin.setticketViewOptions);
+app.put('/approveTransfer/:id', ensureAngularAuthenticated, dbTicket.approveTransfer);
+app.put('/denyTransfer/:id', ensureAngularAuthenticated, dbTicket.denyTransfer);
+app.put('/acknowledgeTeamTransfer/:id', ensureAngularAuthenticated, dbTicket.acknowledgeTeamTransfer);
+app.put('/cancelTransferRequest/:id', ensureAngularAuthenticated, dbTicket.cancelTransferRequest);
+app.put('/activateTicket/:id', ensureAngularAuthenticated, dbTicket.activateTicket);
 
 
 //typeahead and check serverside function
@@ -175,10 +243,12 @@ app.put('/disableTeam/:id', ensureAngularAuthenticated, dbAdmin.disableTeam);
 app.get('/teamListForTicket', ensureAngularAuthenticated, dbAdmin.teamListForTicket);
 app.get('/getUserTeams', ensureAngularAuthenticated, dbAdmin.getUserTeams);
 app.get('/getTeamMembers/:team', ensureAngularAuthenticated, dbAdmin.getTeamMembers);
+app.get('/getTeamListForTransfer', ensureAngularAuthenticated, dbAdmin.getTeamListForTransfer);
 
 //server ports
-app.listen(3000);
-//server.listen(3000);
-console.log("Server is running on port 3000")
+//app.listen(3000); //express
+//server.listen(3000); //for ssl
+server.listen(process.env.PORT || 443); //for socket
+console.log("Server is running on port 80");
 
 //openssl req -x509 -nodes -newkey rsa:1024 -out ticketSystem.crt -keyout clientKey.key

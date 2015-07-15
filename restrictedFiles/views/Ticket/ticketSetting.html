@@ -1,0 +1,48 @@
+<div class="container">
+  <accordion close-others=false>
+    <accordion-group heading="More Ticket View Options">
+      <form name="ticketViewForm">
+        <table>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Creator&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.creatorName" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Creation Date&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.creationDate" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Level&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.level" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Ticket Location&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.ticketLocation" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Assignment Type&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.assignmentType" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Customer Contact Method&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.contactMethod" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+        </table>
+      </br>
+        <button class="btn" ng-click="saveDisplayOption()">Save</button>
+      </form>
+    </accordion-group>
+  </accordion>
+</div>

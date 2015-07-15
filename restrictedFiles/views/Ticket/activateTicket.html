@@ -1,0 +1,30 @@
+<div class="container">
+  <form name="activateLog">
+  </br>
+    <table>
+      <tr><td><label>Activate Ticket: SYSTICKET{{ticketID}}ENDTICKET</label></td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          <label style="font-weight:normal;">Reason for Reactivating<span style="color:red;">*</span></label>
+          <select class="form-input" ng-model="activate.reason" required>
+            <option value="CUSTOMER REQUEST">Customer Request</option>
+            <option value="NOT COMPLETE">Not Completed</option>
+            <option value="AUTHORIZED">Got Authorized</option>
+          </select>
+        </td>
+      </tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td><label style="font-weight:normal;">Please Enter Reactivating Comment</label></td></tr>
+      <tr><td><textarea class="form-control custom-control" rows="10" cols="118" ng-model="activate.content" required></textarea></td></tr>
+      <tr><td>&nbsp;</td></tr>
+      <tr><td>
+      <label style="font-weight:normal;">Notify cutomer of ticket closing&nbsp;</label>
+      <input type="checkbox" ng-model="activate.customerNotifyLog" ng-true-value="true" ng-false-value="false">
+    </td></tr>
+  </table>
+    </br>
+    <button class="btn" ng-disabled="activateLog.$invalid" ng-click="activateTicket()">Activate Ticket</button>
+    <button class="btn" ng-click="cancel()">Cancel</button>
+  </form>
+</div>

@@ -113,6 +113,13 @@ function getUserName(id, cb){
   });
 }
 
+//check if same username
+function checkUsernameExist(name, callback){
+  db.Directory.count({username: name}, function(err, checkUser){
+    callback(checkUser);
+  });
+}
+
 //Exports Functions
 //regular directory function export
 module.exports.listDirectory = listDirectory;
@@ -121,6 +128,7 @@ module.exports.removeFromDirectory = removeFromDirectory;
 module.exports.obtainUserInfo = obtainUserInfo;
 module.exports.updateUserInfo = updateUserInfo;
 module.exports.getdirectoryID = getdirectoryID;
+module.exports.checkUsernameExist = checkUsernameExist;
 
 //typeahead export
 module.exports.lookCustomers = lookCustomers;

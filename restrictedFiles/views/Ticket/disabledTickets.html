@@ -1,0 +1,60 @@
+<div>
+  <tabset>
+    <tab heading="Disabled Tickets" active="allActive" disable="allDisabled">
+      <table class="table" style="text-align: center">
+        <thead>
+          <tr>
+            <th style="text-align: center">Title</th>
+            <th style="text-align: center">Holder</th>
+            <th style="text-align: center">Hold Requested To</th>
+            <th style="text-align: center">Assigned Team</th>
+            <th style="text-align: center">Customer</th>
+            <th style="text-align: center" ng-if="viewOptions.contactMethod">Prefered Contact Method</th>
+            <th style="text-align: center">State</th>
+            <th style="text-align: center">Priority</th>
+            <th style="text-align: center" ng-if="viewOptions.level">Level</th>
+            <th style="text-align: center" ng-if="viewOptions.ticketLocation">Location</th>
+            <th style="text-align: center" ng-if="viewOptions.assignmentType">Assignment Type</th>
+            <th style="text-align: center" ng-if="viewOptions.creatorName">Creator</th>
+            <th style="text-align: center" ng-if="viewOptions.creationDate">Creation Date</th>
+            <th style="text-align: center">Due Date</th>
+            <th style="text-align: center">Closer</th>
+            <th style="text-align: center">Closed Date</th>
+            <th style="text-align: center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="ticket in listTicket ">
+            <td><button popover={{ticket.shortDescription}} popover-placement="right" popover-trigger="mouseenter" style="cursor:default;background-color:white;border:none">{{ticket.ticketTitle}}</button></td>
+            <td>{{ticket.holderName}}</td>
+            <td>{{ticket.assignTo}}</td>
+            <td>{{ticket.assignedTeam}}</td>
+            <td>{{ticket.customerName}}</td>
+            <td ng-if="viewOptions.contactMethod">{{ticket.contactMethod}}</td>
+            <td>{{ticket.ticketState}}</td>
+            <td ng-if="ticket.priority=='1'"style="font-weight:normal;">Urgent</td>
+            <td ng-if="ticket.priority=='2'"style="font-weight:normal;">High</td>
+            <td ng-if="ticket.priority=='3'"style="font-weight:normal;">Medium</td>
+            <td ng-if="ticket.priority=='4'"style="font-weight:normal;">Low</td>
+            <td ng-if="viewOptions.level">{{ticket.level}}</td>
+            <td ng-if="viewOptions.ticketLocation">{{ticket.ticketLocation}}</td>
+            <td ng-if="viewOptions.assignmentType">{{ticket.assignmentType}}</td>
+            <td ng-if="viewOptions.creatorName">{{ticket.creatorName}}</td>
+            <td ng-if="viewOptions.creationDate">{{ticket.creationDate | date:'mediumDate'}}</td>
+            <td>{{ticket.dDate | date:'mediumDate'}}</td>
+            <td>{{ticket.closerName}}</td>
+            <td>{{ticket.closedDate | date:'mediumDate'}}</td>
+            <td class="dropdown">
+              <button class="btn" type="button" id="menu1" data-toggle="dropdown">Action <span class="caret"></span></button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="details(ticket._id)">Ticket Details</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="openCustomerInfo(ticket.customerID)">Customer Detail</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="activateTicket(ticket._id, ticket.customerID)">Activate Ticket</a></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </tab>
+  </tabset>
+</div>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title id="roomName"><%= room%></title>
+  <link rel="stylesheet" href='/rstylesheets/chatLook.css'>
+  <link rel='stylesheet' href='/rstylesheets/global.css'>
+</head>
+<body>
+  <div class="chat">
+    <div class="seperator"></div>
+    <center><label style="font-size:24px">Private Chat</label></center>
+    <center style="font-size:20px"><label id="From"><%= from%></label>&nbsp;<label>&</label>&nbsp;<label id="To"><%= to%></label></center>
+    <div class="seperator"></div>
+    <textarea placeholder = "Type your message"></textarea>
+    <div class="chat-status" style="color:black;background-color:#BCBBBA;font-size:17px"><center>NEW MESSAGE AT TOP</center></div>
+    <div class="chat-messages" style="background-color:#BCBBBA;">
+    </div>
+    <script src="/socket/socket.io.js"></script>
+    <script>
+    (function(){
+      var getNode = function(s){
+        return document.querySelector(s);
+      }
+
+      //Get requiredodes
+      status = getNode('.chat-status'),
+      messages = getNode('.chat-messages'),
+      textarea = getNode('.chat textarea'),
+      statusDefault = status.textContent,
+      setStatus = function(s){
+        status.textContent = s;
+
+        if(s !== statusDefault){
+          var delay = setTimeout(function(){
+            setStatus(statusDefault);
+            clearInterval(delay);
+          }, 3000);
+        }
+      };
+
+      try{
+        var connectTo = "https://localhost:443/" + document.getElementById("roomName").innerHTML;
+        console.log(connectTo);
+        var socket = io.connect(connectTo);
+      } catch(e){
+        //set status to warn user
+      }
+
+      if(socket != undefined){
+
+        //listen for output
+        socket.on('output', function(data){
+          if(data.length){
+            //loop through results
+            for(var x = 0; x < data.length; x++){
+                var message = document.createElement('div');
+                message.setAttribute('class', 'chat-message');
+                message.textContent = data[x].name + ": " + data[x].message;
+
+                //Append
+                messages.appendChild(message);
+                messages.insertBefore(message, messages.firstChild);  //print in reverse order
+            }
+          }
+        });
+
+        //listen for a status
+        socket.on('status', function(data){
+          setStatus((typeof data === 'object') ? data.message : data);
+          if(data.clear === true){
+            textarea.value = '';
+          }
+        });
+
+        //listen for key down
+        textarea.addEventListener('keydown', function(event){
+          var self = this,
+          name = document.getElementById("From").innerHTML;
+
+          if(event.which === 13 && event.shiftKey === false){
+            socket.emit('input',{
+              name: name,
+              message: self.value
+            });
+            event.preventDefault();
+          }
+        });
+      }
+    })();
+    </script>
+  </div>
+</body>
+</html>

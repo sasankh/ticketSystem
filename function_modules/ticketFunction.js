@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var sendEmails = require('./sendEmails');
 var dbDirectory = require('./directoryFunction');
 var dbAdmin = require('./adminFunction');
+var socketConnect = require('./socketFunction');
 //being scrapped var tRFunction = require('./ticketRelationFunctions')
 
 //Database interactions functions for Ticket Collection
@@ -34,39 +35,54 @@ function checkTeamTicketInternal(teamName,callback){
 function addNewTicket(req, res){
   req.body.creationDate = new Date();
   req.body.creatorID = req.user.id;
-  req.body.creator = req.user.username;
+  req.body.creatorName = req.user.username;
   req.body.closerID = 'NONE';
   req.body.closerName = 'NONE';
+  req.body.closedDate = "";
   req.body.active = true;
 
   if(req.body.assignmentType == 'SELF'){
+    req.body.assignTo = 'NONE';
     req.body.holderName = req.user.username;
     req.body.holderID = req.user.id;
     req.body.ticketState = 'In Progress';
+    req.body.assignedTeam = 'OPEN';
+    req.body.assignmentType = 'OPEN';
     enterTheTicket(req,function(reply){
       res.json(reply);
     });
   }else if(req.body.assignmentType == 'DIRECT ASSIGNMENT'){
-      dbAdmin.getAdminID(req.body.holderName,function(hID){
-        req.body.holderID = hID._id;
-        req.body.ticketState = 'To be acknowledged';
-        enterTheTicket(req,function(reply){
-          res.json(reply);
-        });
-      });
+    if(req.body.assignTo == req.user.username){
+      req.body.holderName = req.user.username;
+      req.body.holderID = req.user.id;
+      req.body.ticketState = 'In Progress';
+      req.body.assignTo = 'NONE';
+    }else{
+      req.body.holderName = 'OPEN';
+      req.body.holderID = 'OPEN';
+      req.body.ticketState = 'To be acknowledged';
+    }
+    enterTheTicket(req,function(reply){
+      res.json(reply);
+      socketConnect.sendRefresh();
+    });
     }else if(req.body.assignmentType == 'LEAD ASSIGNED'){
+      req.body.assignTo = 'NONE';
       req.body.holderName = 'OPEN';
       req.body.holderID = 'OPEN';
       req.body.ticketState = 'To Be Assigned';
       enterTheTicket(req,function(reply){
         res.json(reply);
+        socketConnect.sendRefresh();
       });
     }else{
       req.body.holderName = 'OPEN';
       req.body.holderID = 'OPEN';
       req.body.ticketState = 'New';
+      req.body.assignTo = 'NONE';
       enterTheTicket(req,function(reply){
         res.json(reply);
+        socketConnect.sendRefresh();
       });
     }
   }
@@ -107,34 +123,81 @@ function enterTheTicket(req,callback){
 //assign ticket to user
 function assignTicketToUser(req, res){
   var id = req.params.id;
-  dbAdmin.getAdminID(req.body.holderName,function(hID){
-    req.body.holderID = hID._id;
+//  dbAdmin.getAdminID(req.body.holderName,function(hID){
+  if(req.body.type == 'assign'){
     req.body.ticketState = 'To be acknowledged';
-    db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {holderName: req.body.holderName, holderID: req.body.holderID, ticketState: req.body.ticketState}},new: true}, function(err, doc){
-      var assignedContent = "Ticket assigned to user: " + req.body.holderName;
-      var log = {type:"Assigned", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+    req.body.assignmentType = 'DIRECT ASSIGNMENT';
+  }else if(req.body.type == 'team' || req.body.type == 'transfer'){
+    req.body.ticketState = 'To be acknowledged';
+  }else{
+    req.body.ticketState = 'To be approved';
+  }
+    db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {assignTo: req.body.assignTo, ticketState: req.body.ticketState, assignmentType:req.body.assignmentType}},new: true}, function(err, doc){
+      if(req.body.type == 'assign'){
+        var assignedContent = "Ticket assigned to user: " + req.body.assignTo;
+        var log = {type:"Assigned", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+      }else if(req.body.type == 'transfer'){
+        var assignedContent = "Transfer requested to user: " + req.body.assignTo + " with comment -- " + req.body.comment + " --";
+        var log = {type:"Transfer Request", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+      }else if(req.body.type == 'teamTransfer'){
+        var assignedContent = "Transfer requested to team: " + req.body.assignTo + " with comment -- " + req.body.comment + " --";
+        var log = {type:"Transfer Request", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+      }else{
+        var assignedContent = "Transfer suggested to user: " + req.body.assignTo + " with comment -- " + req.body.comment + " --";
+        var log = {type:"Transfer Suggestion", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+      }
       enterLog(id,log, function(){});
       res.json(200);
+      socketConnect.sendRefresh();
     });
-  });
+//  });
 }
 
-
+//approve ticket transfer
+function approveTransfer(req, res){
+  var id = req.params.id;
+  db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {ticketState: 'To be acknowledged'}},new: true}, function(err, doc){
+    var assignedContent = "Transfer approved to user: " + req.body.transferTo;
+    var log = {type:"Approved", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+    enterLog(id,log, function(){});
+    res.json(200);
+    socketConnect.sendRefresh();
+  });
+}
 
 //acknowledge ticket
 function acknowledgeTicket(req, res){
   var id = req.params.id;
   var log = {type:"Acknowledgement", date: new Date(), by:req.user.username, content:"Ticket assignment acknowledged by user: "+req.user.username, customerNotifyLog:false, customerVisibleLog:false};
   enterLog(id,log, function(){});
-  db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {ticketState: "In Progress"}},new: true}, function(err, doc){
+  db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {ticketState: "In Progress", holderName:req.user.username, holderID:req.user.id, assignTo:"NONE"}},new: true}, function(err, doc){
     res.json(200);
+    socketConnect.sendRefresh();
   });
 }
 
 //send the list of all active tickets
 function listTicket(req, res){
-  db.Ticket.find({active: true},{assignmentType:1, assignedTeam:1, ticketTitle:1, priority:1, dDate:1, shortDescription:1, customerID:1, ticketState:1, customerName:1, holderName:1},function(err, lists){
+  db.Ticket.find({active: true},{creatorName:1, assignTo:1, assignmentType:1, assignedTeam:1, ticketTitle:1, priority:1, dDate:1, shortDescription:1, customerID:1, ticketState:1, customerName:1, holderName:1, creationDate:1, ticketLocation:1, contactMethod:1, level:1},function(err, lists){
     res.json(lists);
+  });
+}
+
+//list disable ticket
+function listDisableTicket(req, res){
+  db.Ticket.find({active: false},{closedDate:1 ,closerName:1, creatorName:1, assignTo:1, assignmentType:1, assignedTeam:1, ticketTitle:1, priority:1, dDate:1, shortDescription:1, customerID:1, ticketState:1, customerName:1, holderName:1, creationDate:1, ticketLocation:1, contactMethod:1, level:1},function(err, lists){
+    res.json(lists);
+  });
+}
+
+//acknowledge team transfer
+function acknowledgeTeamTransfer(req, res){
+  var id = req.params.id;
+  db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {ticketState: "To Be Assigned", holderName:'OPEN', holderID:'OPEN', assignTo:"NONE", assignmentType:"LEAD ASSIGNED", assignedTeam:req.body.assignTo}},new: true}, function(err, doc){
+    var log = {type:"Acknowledgement", date: new Date(), by:req.user.username, content:"Ticket transfer to " + req.body.assignTo + " acknowledged by lead: "+req.user.username, customerNotifyLog:false, customerVisibleLog:false};
+    enterLog(id,log, function(){});
+    res.json(200);
+    socketConnect.sendRefresh();
   });
 }
 
@@ -160,6 +223,7 @@ function updateTicketInfo(req, res){
   }},
     new: true}, function(err, doc){
     res.json(200);
+    socketConnect.sendRefresh();
   });
 }
 
@@ -169,9 +233,10 @@ function grabTicket(req, res){
   var log = {type:"Grabbed", date: new Date(), by:req.user.username, content:"Ticket grabbed by user: "+req.user.username, customerNotifyLog:false, customerVisibleLog:false};
   enterLog(id,log, function(){});
   db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},
-    update: {$set: {holderName: req.user.username, holderID: req.user.id, ticketState: "In Progress"}},
+    update: {$set: {holderName: req.user.username, holderID: req.user.id, ticketState: "In Progress", assignTo:'NONE'}},
     new: true}, function(err, doc){
     res.json(200);
+    socketConnect.sendRefresh();
   });
 }
 
@@ -207,29 +272,105 @@ function addTicketLog(req, res){
   });
 }
 
+//deny transfer
+function denyTransfer(req, res){
+  var id = req.params.id;
+  db.Ticket.findOne({_id: mongojs.ObjectId(id)}, {assignTo:1, ticketState:1, _id:0}, function(err, doc){
+    if((doc.assignTo != 'NONE') && (doc.ticketState == 'To be approved')){
+      db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {ticketState: "In Progress", assignTo:"NONE"}},new: true}, function(err, doc){
+        var assignedContent = "Deny of transfer request to "+req.body.denyTo;
+        var log = {type:"Transfer Request Denied", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+        enterLog(id,log, function(){});
+        res.json(200);
+        socketConnect.sendRefresh();
+      });
+    }else{
+      res.json(300);
+      socketConnect.sendRefresh();
+    }
+  })
+}
+
+//cancel transfer request
+function cancelTransferRequest(req, res){
+  var id = req.params.id;
+  var assignTicketState = "In Progress";
+  db.Ticket.findOne({_id: mongojs.ObjectId(id)}, {holderName:1, assignTo:1, ticketState:1, _id:0}, function(err, doc){
+    if((doc.holderName == 'OPEN') && (doc.assignedTeam != 'OPEN')){
+      assignTicketState = "To Be Assigned";
+    }
+    if((doc.assignTo != 'NONE') && ((doc.ticketState == 'To be acknowledged') || (doc.ticketState == 'To be approved'))){
+      db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)},update: {$set: {ticketState: assignTicketState, assignTo:"NONE"}},new: true}, function(err, doc){
+        var assignedContent = "Cancelation of transfer request to "+req.body.assignTo;
+        var log = {type:"Transfered Requested Canceled", date: new Date(), by:req.user.username, content:assignedContent, customerNotifyLog:false, customerVisibleLog:false};
+        enterLog(id,log, function(){});
+        res.json(200);
+        socketConnect.sendRefresh();
+      });
+    }else{
+      res.json(300);
+      socketConnect.sendRefresh();
+    }
+  })
+}
+
 //close ticket
 function closeTicket(req, res){
   var id = req.params.id;
   var log = {type:req.body.type, date: new Date(), by:req.user.username, content:req.body.content, customerNotifyLog:req.body.customerNotifyLog, customerVisibleLog:req.body.customerVisibleLog};
   enterLog(id,log, function(doc){
     if(doc.ok){
-      db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)}, update: {$set: {closerID: req.user.id, closerName: req.user.id, ticketState: req.body.ticketState, active:false}}, new: true}, function(err, doc){
+      db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)}, update: {$set: {closerID: req.user.id, closerName: req.user.username, closedDate: new Date() , ticketState: req.body.ticketState, active:false}}, new: true}, function(err, doc){
         if(req.body.customerNotifyLog){
           dbDirectory.getUserEmailInternal(req.body.customerID, function(customerInfo){
             var emailData = {"by":req.user.username, "kind":"Closing","to":customerInfo.email, "subject":"Ticket: SYSTICKET"+id+"ENDTICKET " + req.body.ticketState,"message":"This is to let you know that the ticket (SYSTICKET"+id+"ENDTICKET) has been " + req.body.ticketState + " and closed with the closing comment: ---"+req.body.content+" ---. Thank You.", "ticketID":id};
             sendEmails.notifyEmail(emailData, function(){
               res.json(200);
+              socketConnect.sendRefresh();
             });
           });
         }else{
           res.json(200);
+          socketConnect.sendRefresh();
         }
       });
     }else{
       res.json(300);
+      socketConnect.sendRefresh();
     }
   });
 }
+
+
+//activate ticket
+function activateTicket(req, res){
+  var id = req.params.id;
+  var log = {type:req.body.type, date: new Date(), by:req.user.username, content:req.body.content, customerNotifyLog:req.body.customerNotifyLog, customerVisibleLog:req.body.customerVisibleLog};
+  enterLog(id,log, function(doc){
+    if(doc.ok){
+      db.Ticket.findAndModify({query: {_id: mongojs.ObjectId(id)}, update: {$set: {assignTo:'NONE', assignedTeam:'OPEN', assignmentType:'OPEN', closerID: 'NONE', closerName: 'NONE', closedDate:"NONE" ,ticketState: 'In Progress', active:true, holderName:req.user.username, holderID:req.user.id}}, new: true}, function(err, doc){
+        if(req.body.customerNotifyLog){
+          dbDirectory.getUserEmailInternal(req.body.customerID, function(customerInfo){
+            var emailData = {"by":req.user.username, "kind":"Ticket Reactivation","to":customerInfo.email, "subject":"Ticket: SYSTICKET"+id+"ENDTICKET Reactivated" + req.body.reason,"message":"This is to let you know that the ticket (SYSTICKET"+id+"ENDTICKET) has been reactivated with the following comment: ---"+req.body.content+" ---. Thank You.", "ticketID":id};
+            sendEmails.notifyEmail(emailData, function(){
+              res.json(200);
+              socketConnect.sendRefresh();
+            });
+          });
+        }else{
+          res.json(200);
+          socketConnect.sendRefresh();
+        }
+      });
+    }else{
+      res.json(300);
+      socketConnect.sendRefresh();
+    }
+  });
+}
+
+
+
 
 //export function
 module.exports.addNewTicket = addNewTicket;
@@ -245,6 +386,12 @@ module.exports.checkTeamTicketInternal = checkTeamTicketInternal;
 module.exports.acknowledgeTicket = acknowledgeTicket;
 module.exports.assignTicketToUser = assignTicketToUser;
 module.exports.closeTicket = closeTicket;
+module.exports.approveTransfer = approveTransfer;
+module.exports.acknowledgeTeamTransfer = acknowledgeTeamTransfer;
+module.exports.cancelTransferRequest = cancelTransferRequest;
+module.exports.activateTicket = activateTicket;
+module.exports.listDisableTicket = listDisableTicket;
+module.exports.denyTransfer = denyTransfer;
 
 //internal function
 //enter in the log

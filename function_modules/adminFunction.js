@@ -2,11 +2,13 @@ var mongojs = require('mongojs');
 var db = mongojs('test',['admins']);
 var dbTeam = mongojs('test',['teams']);
 var dbTicket = require('./ticketFunction');
+var dbDirectory = require('./directoryFunction');
 var bodyParser = require('body-parser');
 
 //add new user to Directory
 function addAdmin(req, res){
   req.body.show = true;
+  req.body.ticketViewOptions = {creatorName:false, creationDate:false, level:false, ticketLocation:false, assignmentType:true, contactMethod:false};
   db.admins.insert(req.body,function(err, docs){
     res.json(200);
   });
@@ -105,6 +107,20 @@ function activateOtherAccount(req,res){
   });
 }
 
+//get ticket view options
+function getticketViewOptions(req, res){
+  db.admins.findOne({_id: mongojs.ObjectId(req.user.id)},{ticketViewOptions:1, _id:0}, function(err,doc){
+    res.json(doc.ticketViewOptions);
+  });
+}
+
+//set ticket view options
+function setticketViewOptions(req, res){
+  db.admins.findAndModify({query: {_id: mongojs.ObjectId(req.user.id)}, update: {$set: {ticketViewOptions : req.body.viewOptions}}, new: true}, function(err, docs){
+    res.json(200);
+  });
+}
+
 //get users for team
 function getUsersForTeam(req,res){
   db.admins.find({active:true, show:true},{name:1, username:1, _id:0},function(err, docs){
@@ -119,8 +135,14 @@ function createTeam(req, res){
   req.body.active = true;
   dbTeam.teams.count({name:req.body.name}, function(err, docs){
     if(docs == 0){
-      dbTeam.teams.insert(req.body,function(err, doc){
-        res.json(200);
+      dbDirectory.checkUsernameExist(req.body.name,function(count){
+        if(count == 0){
+          dbTeam.teams.insert(req.body,function(err, doc){
+            res.json(200);
+          });
+        }else{
+          res.json("name");
+        }
       });
     }else{
       res.json("name");
@@ -198,8 +220,21 @@ function getUserTeams(req,res){
 //get team members
 function getTeamMembers(req, res){
   var team = req.params.team;
-  dbTeam.teams.findOne({name:team, active:true},{_id:0, members:1}, function(err, teamList){
+  if (team == 'OPEN'){
+    db.admins.find({active:true},{username:1, name:1, _id:0}, function(err, activeAdmins){
+      res.json(activeAdmins);
+    });
+  }else{
+    dbTeam.teams.findOne({name:team, active:true},{_id:0, members:1}, function(err, teamList){
     res.json(teamList.members);
+  });
+}
+}
+
+//get team list for ticket transfer
+function getTeamListForTransfer(req,res){
+  dbTeam.teams.find({active:true},{name:1, _id:0}, function(err, teamList){
+    res.json(teamList);
   });
 }
 
@@ -248,3 +283,6 @@ module.exports.teamListForTicket = teamListForTicket;
 module.exports.getAdminID = getAdminID;
 module.exports.getUserTeams = getUserTeams;
 module.exports.getTeamMembers = getTeamMembers;
+module.exports.getticketViewOptions = getticketViewOptions;
+module.exports.setticketViewOptions = setticketViewOptions;
+module.exports.getTeamListForTransfer = getTeamListForTransfer;

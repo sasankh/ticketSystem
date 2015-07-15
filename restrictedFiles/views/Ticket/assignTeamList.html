@@ -1,0 +1,26 @@
+<div>
+  <center>
+  </br>
+  <input placeholder="Enter to Search" class="form-input" style="width:90%;text-align:center;" ng-model="search">
+</center>
+<form name="transForm">
+<table class="table" style="text-align: center">
+  <thead>
+    <tr>
+      <th style="text-align: center">Team Member</th>
+      <th style="text-align: center">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="member in memberList | filter:search">
+      <td ng-if="member.username != 'theforce'">{{member.name}}</td>
+      <td ng-if="type == 'assign'"><button class='btn' ng-click="assignUser(member.username)">Assign</button></td>
+      <td ng-if="type == 'team'"><button class='btn' ng-disabled="transForm.$invalid" ng-click="assignUser(member.name)">Request Transfer</button></td>
+      <td ng-if="member.username != 'theforce' && type == 'transfer'"><button class='btn' ng-disabled="transForm.$invalid" ng-click="assignUser(member.username)">Request Transfer</button></td>
+      <td ng-if="type == 'suggest'"><button class='btn' ng-disabled="transForm.$invalid" ng-click="assignUser(member.username)">Suggest</button></td>
+    </tr>
+    <tr ng-if="type != 'assign'" style="text-align: left"><td><label style="font-weight:normal;">Please Enter Comment</label><textarea class="form-control custom-control" rows="10" cols="118" ng-model="trans.comment" required></textarea></td></tr>
+  </tbody>
+</table>
+</form>
+</div>
