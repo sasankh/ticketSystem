@@ -1,16 +1,18 @@
 Note:
-Script to auto create the database, and a page to enter the ip, dns and email's (username and password) will be available in the final git push|product.
+Script to auto create the database, and a page to enter the ip, dns and email's (username and password) will be available in the final product.
 Along with the script to turn the system into a service in the host so that it restarts automatically at system start.
 Feel free to use and comment.:)
 
 SuperAdmin
+
 username: "theforce"                 //you cannot change the user. No one can change 'theforce' unless you do it directly from the database:)
+
 password: "maytheforcebewithyou"     //you can change the password
 
 
 1) Used  MEAN stack.
 
-2)There is a 'test' mongodbdump in the 'db' folder. Perforem a 'mongrestore' of the 'test' database.
+2)There is a mongodbdump called 'test' in the 'db' folder. Perforem a 'mongrestore' of the 'test' database. 
 
 3) Perform "npm install".
 
