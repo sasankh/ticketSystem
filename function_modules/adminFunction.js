@@ -1,6 +1,7 @@
 var mongojs = require('mongojs');
 var db = mongojs('test',['admins']);
 var dbTeam = mongojs('test',['teams']);
+var dbGlobal = mongojs('test',['globalSettings']);
 var dbTicket = require('./ticketFunction');
 var dbDirectory = require('./directoryFunction');
 var bodyParser = require('body-parser');
@@ -264,6 +265,35 @@ function teamListForTicket(req,res){
   });
 }
 
+//get the teams the user is in
+function getUserTeamList(req, res){
+  var userTeams = [];
+  dbTeam.teams.find({active:true}, function(err, docs){
+    for(var x = 0; x < docs.length; x++){
+      if(docs[x].members.map(function(e) { return e.username; }).indexOf(req.user.username) > -1){        //imp to note
+        userTeams.push(docs[x].name);
+      }
+    }
+    res.json(userTeams);
+  });
+}
+//global system options/settings
+function setSystemTicketSettings(req, res){
+  dbGlobal.globalSettings.findAndModify({query: {type : "systemTicketSettings"}, update: {$set: {ticketSettings : req.body.ticketSettings}}, new: true}, function(err, docs){
+    res.json(200);
+  });
+}
+
+function getSystemTicketSettings(req, res){
+  dbGlobal.globalSettings.findOne({type:"systemTicketSettings"},{ticketSettings:1, _id:0}, function(err, docs){
+    res.json(docs);
+  });
+}
+
+
+
+
+
 module.exports.getAdminUsername = getAdminUsername;
 module.exports.addAdmin = addAdmin;
 module.exports.adminAuthentication = adminAuthentication;
@@ -286,3 +316,6 @@ module.exports.getTeamMembers = getTeamMembers;
 module.exports.getticketViewOptions = getticketViewOptions;
 module.exports.setticketViewOptions = setticketViewOptions;
 module.exports.getTeamListForTransfer = getTeamListForTransfer;
+module.exports.setSystemTicketSettings = setSystemTicketSettings;
+module.exports.getSystemTicketSettings = getSystemTicketSettings;
+module.exports.getUserTeamList = getUserTeamList;

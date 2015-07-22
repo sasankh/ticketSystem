@@ -124,8 +124,11 @@ app.get('/login',function(req,res){
 });
 
 app.get('/logout', function(req, res){
+  var user = req.user.username;
+  var session = req.sessionID;
   req.logout();
   res.redirect('/');
+  setTimeout(function(){socketConnect.logOutremoveSockets(user, session, publicChat);}, 500); //remove sockets other then the main page
 });
 
 app.get('/main', ensureAuthenticated, function(req,res){
@@ -165,6 +168,30 @@ app.get('/privateMessage/:check',ensureAuthenticated, function(req, res){
   }
 });
 
+//one on one chat seperate
+app.get('/privateMessageExternal/:check', ensureAuthenticated, function(req, res){
+  var check = req.params.check;
+  var checkSplit = check.split("-");
+  var toUser = "";
+  if(checkSplit[0] != req.user.username){
+    toUser = checkSplit[0];
+  }else{
+    toUser = checkSplit[1];
+  }
+  res.render('privateMessageExternal',{
+    from: req.user.username,
+    to: toUser,
+    room: check
+  });
+});
+
+//-------------------------------------------------------------------------
+//public chat seperate window
+app.get('/publicMessage',ensureAuthenticated, function(req, res){
+  res.render('publicMessage',{
+    controlUser: req.user.username
+  });
+});
 //-------------------------------------------------------------------------
 app.post('/login', passport.authenticate('local'), function(req,res){
   res.redirect('/main');
@@ -207,8 +234,8 @@ app.put('/denyTransfer/:id', ensureAngularAuthenticated, dbTicket.denyTransfer);
 app.put('/acknowledgeTeamTransfer/:id', ensureAngularAuthenticated, dbTicket.acknowledgeTeamTransfer);
 app.put('/cancelTransferRequest/:id', ensureAngularAuthenticated, dbTicket.cancelTransferRequest);
 app.put('/activateTicket/:id', ensureAngularAuthenticated, dbTicket.activateTicket);
-
-
+app.put('/setSystemTicketSettings', ensureAngularAuthenticated, dbAdmin.setSystemTicketSettings);
+app.get('/getSystemTicketSettings', ensureAngularAuthenticated, dbAdmin.getSystemTicketSettings);
 //typeahead and check serverside function
 //typeahead
 app.get('/lookCustomers/:look', ensureAngularAuthenticated, dbDirectory.lookCustomers);
@@ -244,7 +271,7 @@ app.get('/teamListForTicket', ensureAngularAuthenticated, dbAdmin.teamListForTic
 app.get('/getUserTeams', ensureAngularAuthenticated, dbAdmin.getUserTeams);
 app.get('/getTeamMembers/:team', ensureAngularAuthenticated, dbAdmin.getTeamMembers);
 app.get('/getTeamListForTransfer', ensureAngularAuthenticated, dbAdmin.getTeamListForTransfer);
-
+app.get('/getUserTeamList', ensureAngularAuthenticated, dbAdmin.getUserTeamList)
 //server ports
 //app.listen(3000); //express
 //server.listen(3000); //for ssl

@@ -46,10 +46,13 @@ function addNewTicket(req, res){
     req.body.holderName = req.user.username;
     req.body.holderID = req.user.id;
     req.body.ticketState = 'In Progress';
-    req.body.assignedTeam = 'OPEN';
+    if(req.body.assignedTeam === 'SELF'){
+      req.body.assignedTeam = 'OPEN';
+    }
     req.body.assignmentType = 'OPEN';
     enterTheTicket(req,function(reply){
       res.json(reply);
+      socketConnect.sendRefresh();
     });
   }else if(req.body.assignmentType == 'DIRECT ASSIGNMENT'){
     if(req.body.assignTo == req.user.username){
@@ -178,7 +181,7 @@ function acknowledgeTicket(req, res){
 
 //send the list of all active tickets
 function listTicket(req, res){
-  db.Ticket.find({active: true},{creatorName:1, assignTo:1, assignmentType:1, assignedTeam:1, ticketTitle:1, priority:1, dDate:1, shortDescription:1, customerID:1, ticketState:1, customerName:1, holderName:1, creationDate:1, ticketLocation:1, contactMethod:1, level:1},function(err, lists){
+  db.Ticket.find({active: true},{creatorName:1, assignTo:1, assignmentType:1, assignedTeam:1, ticketTitle:1, priority:1, dDate:1, customerID:1, ticketState:1, customerName:1, holderName:1, creationDate:1, ticketLocation:1, contactMethod:1, level:1},function(err, lists){
     res.json(lists);
   });
 }

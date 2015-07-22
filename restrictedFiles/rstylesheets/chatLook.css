@@ -23,13 +23,15 @@ input {
 }
 .online-users {
   width:100%;
-  padding: 10px;
+  padding-top:10px;
+  padding-bottom:10px;
   overflow-y:auto;
 }
 
 .chat-message,
 .online-user {
-  margin-bottom:10px;
+  width: 100%;
+  height: 35px;
 }
 
 .chat-name {

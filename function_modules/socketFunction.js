@@ -9,6 +9,7 @@ var nameSpaceRefresh = "";
 //authorization
 //socket authentication function
 function onAuthorizeSuccess(data, accept){
+
   console.log('successful connection to socket.io');
   //  enterUserToOnlineList(data.user.username,function(){
   // If you use socket.io@1.X the callback looks different
@@ -41,7 +42,6 @@ function publicChat(publicChat){
           publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
         });
       });
-
 
       var col = db.collection('messages'),
       sendStatus = function(s){
@@ -78,10 +78,10 @@ function publicChat(publicChat){
 
       socket.on('disconnect', function(){
         checkRemoveSocketInfo(socket, function(){
-          getOnlineUsers(function(usersOnline){
-            publicChat.emit('output',[{name: "SERVER", message: socket.client.request.user.username + " logged off", type:"message"}]);
-            publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
-          });
+  //        getOnlineUsers(function(usersOnline){
+  //          publicChat.emit('output',[{name: "SERVER", message: socket.client.request.user.username + " logged off", type:"message"}]);
+  //          publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
+  //        });
         });
       });
     });
@@ -92,6 +92,35 @@ function publicChat(publicChat){
 function enterSocketInfo(socket, callback){
   var user = socket.client.request.user.username;
   var exist = false;
+  var expressSID = socket.client.request.cookie['express.sid'];
+  //----------new code ---------------------------------------
+  if(onlineUserList.length > 0){
+    for(var x = 0; x < onlineUserList.length; x++){
+      if(onlineUserList[x].username == user){
+        for(var y = 0; y < onlineUserList[x].socketList.length; y++){
+          if(onlineUserList[x].socketList[y].sessionID === expressSID){
+            onlineUserList[x].socketList[y].sessionSockets.push(socket);
+            exist = true;
+            break;
+          }
+        }
+        if(!exist){
+          onlineUserList[x].socketList.push({sessionID:expressSID,sessionSockets:[socket]})
+          exist = true;
+          break;
+        }
+        break;
+      }
+    }
+    if(!exist){
+      onlineUserList.push({username:user, socketList:[{sessionID:expressSID,sessionSockets:[socket]}]});
+      exist = true;
+    }
+  }else{
+    onlineUserList.push({username:user, socketList:[{sessionID:expressSID,sessionSockets:[socket]}]});
+  }
+  //-----------------------------------------------------------
+  /* ---------old code----------------
   if(onlineUserList.length > 0){
     for(var x = 0; x < onlineUserList.length; x++){
       if(onlineUserList[x].username == user){
@@ -106,13 +135,34 @@ function enterSocketInfo(socket, callback){
     }
   }else{
     onlineUserList.push({username:user, socketList:[socket]});
-  }
+  }-----------------------------------------------*/
   callback();
 }
 
 //check and remove online user and socket
 function checkRemoveSocketInfo(socket, callback){
   var user = socket.client.request.user.username;
+  var expressSID = socket.client.request.cookie['express.sid'];
+  //-------------------------------new code -----------------------
+  if(onlineUserList.length > 0){
+    for(var x = 0; x < onlineUserList.length; x++){
+      if(onlineUserList[x].username === user){
+        for(var y = 0; y < onlineUserList[x].socketList.length; y++){
+          if(onlineUserList[x].socketList[y].sessionID === expressSID){
+            onlineUserList[x].socketList[y].sessionSockets.splice(onlineUserList[x].socketList[y].sessionSockets.indexOf(socket),1);
+            break;
+          }
+        }
+  //      if(onlineUserList[x].socketList.length === 0){
+  //        onlineUserList.splice(x, 1);
+  //        break;
+  //      }
+        break;
+      }
+    }
+  }
+  //-----------------------------------------------------------
+  /* ---------old code----------------
   if(onlineUserList.length > 0){
     for(var x = 0; x < onlineUserList.length; x++){
       if(onlineUserList[x].username == user){
@@ -133,7 +183,7 @@ function checkRemoveSocketInfo(socket, callback){
     }
   }else{
     console.log("Online User is empty?!");
-  }
+  }--------------------------------------------------------*/
   callback();
 }
 
@@ -147,6 +197,47 @@ function getOnlineUsers(callback){
   }else{
     callback(usersOnline);
   }
+}
+
+//remove any socket left open after logout
+function logOutremoveSockets(user, session, publicChat){
+//-------------------------------new code-------------------------------
+for(var x = 0; x < onlineUserList.length; x++){
+  if(onlineUserList[x].username === user){
+    for(var y = 0; y < onlineUserList[x].socketList.length; y++){
+      if(onlineUserList[x].socketList[y].sessionID === session){
+        if(onlineUserList[x].socketList[y].sessionSockets.length === 0){
+          onlineUserList[x].socketList.splice(y, 1);
+        }else{
+          for(var z = 0; z < onlineUserList[x].socketList[y].sessionSockets.length; z++){
+            onlineUserList[x].socketList[y].sessionSockets[z].emit('closeWindow', true);
+          }
+          onlineUserList[x].socketList.splice(y, 1);
+        }
+        break;
+      }
+    }
+    if(onlineUserList[x].socketList.length === 0){
+      onlineUserList.splice(x,1);
+    }
+    break;
+  }
+}
+getOnlineUsers(function(usersOnline){
+  publicChat.emit('output',[{name: "SERVER", message: user + " logged off", type:"message"}]);
+  publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
+});
+
+//----------------------------------------------------------------------
+/*------------------------------old code--------------------------------
+   for(var x = 0; x < onlineUserList.length; x++){
+      if(onlineUserList[x].username === user){
+        for(var y = 0; y < onlineUserList[x].socketList.length; y++){
+              onlineUserList[x].socketList[y].emit('closeWindow', true);
+        }
+      }
+      onlineUserList.splice(x,1);
+    }-------------------------------------------------------------------*/
 }
 
 //------------------------------------------------------------------------------
@@ -170,7 +261,157 @@ function checkActivePrivateRooms(io,fromUser,toUser,callback){
     });
   }
 }
+//-----------------------------------------new code for createChatRoom---------
 
+function createChatRoom(io, chatRoomName, authorizedUsers, callback){
+
+  var onlineUsers = [];
+  var room = "/" + chatRoomName;
+  var privateChat = io.of(room);
+  activePrivateRooms.push(chatRoomName);
+  if(activePrivateRooms.indexOf(chatRoomName) > -1){
+    callback(chatRoomName);
+  }
+  privateChat.on('connection', function(socket){
+    if(authorizedUsers.indexOf(socket.client.request.user.username > -1)){
+      var expressSID = socket.client.request.cookie['express.sid'];
+      privateChat.emit('output',[{name: "SERVER", message: socket.client.request.user.username + " opened the private room"}]);
+
+      if(onlineUsers.length == 0){
+        onlineUsers.push({username:socket.client.request.user.username, socketList:[{sessionID:expressSID, sessionSockets:[socket]}]});
+      }else if(onlineUsers.length == 1){
+        if(onlineUsers[0].username == socket.client.request.user.username){
+          var exist = false;
+          for(var x = 0; onlineUsers[0].socketList.length; x++){
+            if(onlineUsers[0].socketList[x].sessionID === expressSID){
+              onlineUsers[0].socketList[x].sessionSockets.push(socket);
+              exist = true;
+              break;
+            }
+          }
+          if(!exist){
+            onlineUsers[0].socketList.push({sessionID:expressSID, sessionSockets:[socket]});
+          }
+        }else{
+          onlineUsers.push({username:socket.client.request.user.username, socketList:[{sessionID:expressSID, sessionSockets:[socket]}]});
+        }
+      }else{
+        for(var x = 0; x < onlineUsers.length; x++){
+          if(onlineUsers[x].username === socket.client.request.user.username){
+            var exist = false;
+            for(var y = 0; y < onlineUsers[x].socketList.length; y++){
+              if(onlineUsers[x].socketList[y].sessionID === expressSID){
+                onlineUsers[x].socketList[y].sessionSockets.push(socket);
+                exist = true;
+                break;
+              }
+            }
+            if(!exist){
+              onlineUsers[x].socketList.push({sessionID:expressSID, sessionSockets:[socket]});
+              break;
+            }
+            break;
+          }
+        }
+      }
+
+      // socket chat functions
+      var sendStatus = function(s){
+        socket.emit('status', s);
+      };
+
+      //wait for input
+      socket.on('input', function(data){
+        var name = data.name;
+        var message = data.message;
+        var whitespacePattern = /^\s*$/;
+
+        if( whitespacePattern.test(name) ||  whitespacePattern.test(message)){
+          sendStatus('Name and message is required');
+        }else{
+          if(onlineUsers.length == 1){
+            var toUser = "";
+            for(var x = 0; x < authorizedUsers.length; x++){
+              if(authorizedUsers[x] != socket.client.request.user.username){
+                popPrivateWindow(authorizedUsers[x], socket.client.request.user.username, chatRoomName, function(opened){
+                  if(opened){
+                    //set certain delay but remove when database is used
+                    setTimeout(function(){                                 //remove this line after database added
+                      privateChat.emit('output',[data]);
+
+                      sendStatus({
+                        message: "Message Sent",
+                        clear: true
+                      });
+                    }, 1000);    //remove this line when database added
+                  }else{
+                    privateChat.emit('output', [data]);
+                    privateChat.emit('output', [{name: "SERVER", message: "Sorry, User is not online."}]);
+                    sendStatus({
+                      message: "Message Sent",
+                      clear: true
+                    });
+                  }
+                });
+                break;
+              }
+            }
+          }else{
+            privateChat.emit('output', [data]);
+            sendStatus({
+              message: "Message Sent",
+              clear: true
+            });
+          }
+        }
+      });
+
+      socket.on('disconnect', function(){
+
+        if(onlineUsers.length > 0){
+          for(var x = 0; x < onlineUsers.length; x++){
+            if(onlineUsers[x].username === socket.client.request.user.username){
+              for(var y = 0; y < onlineUsers[x].socketList.length; y++){
+                if(onlineUsers[x].socketList[y].sessionID === socket.client.request.cookie['express.sid']){
+                  for(var z = 0; z < onlineUsers[x].socketList[y].sessionSockets.length; z++){
+                    if(onlineUsers[x].socketList[y].sessionSockets[z] === socket){
+                      onlineUsers[x].socketList[y].sessionSockets.splice(z, 1);
+                      break;
+                    }
+                  }
+                  if(onlineUsers[x].socketList[y].sessionSockets.length === 0){
+                    onlineUsers[x].socketList.splice(y, 1);
+                  }
+                  break;
+                }
+              }
+              if(onlineUsers[x].socketList.length === 0){
+                onlineUsers.splice(x, 1);
+              }
+              privateChat.emit('output',[{name: "SERVER", message: socket.client.request.user.username + " closed the private room"}]);
+              break;
+            }
+          }
+        }
+        if(onlineUsers.length == 0){
+          privateChat = null;
+          delete io.nsps[room];
+          activePrivateRooms.splice(activePrivateRooms.indexOf(chatRoomName),1);
+        }
+      });
+    }else{
+      socket.emit('output',[{name: "SERVER", message: "You are not authorized inside this private chat"}]);
+      socket.disconnect();
+    }
+  });
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+
+/*-------------------------------------------old code of private------------
 function createChatRoom(io, chatRoomName, authorizedUsers, callback){
 
   var onlineUsers = [];
@@ -287,11 +528,23 @@ function createChatRoom(io, chatRoomName, authorizedUsers, callback){
       socket.emit('output',[{name: "SERVER", message: "You are not authorized inside this private chat"}]);
     }
   });
-}
+}------------------------------------------------------*/
 
 //pop private window on other user page
 function popPrivateWindow(user, fromUser, chatRoomName, callback){
   var opened = false;
+  for(var x = 0; x < onlineUserList.length; x++){
+    if(onlineUserList[x].username === user){
+      for(var y = 0; y < onlineUserList[x].socketList.length; y++){
+        for(var z = 0; z < onlineUserList[x].socketList[y].sessionSockets.length; z++){
+          onlineUserList[x].socketList[y].sessionSockets[z].emit('output',[{name: "SERVER", room: chatRoomName, type:"openPrivateRoom"}]);
+        }
+      }
+      opened = true;
+      break;
+    }
+  }
+/*-------------------------old code ------------------------------------------
   for(var x = 0; x < onlineUserList.length; x++){
     if(onlineUserList[x].username == user){
       for(var y = 0; y < onlineUserList[x].socketList.length; y++){
@@ -300,7 +553,7 @@ function popPrivateWindow(user, fromUser, chatRoomName, callback){
       opened = true;
       break;
     }
-  }
+  }---------------------------------------------------------*/
   callback(opened);
 }
 
@@ -327,4 +580,5 @@ module.exports.onAuthorizeFail = onAuthorizeFail;
 module.exports.checkActivePrivateRooms = checkActivePrivateRooms;
 module.exports.refresher = refresher;
 module.exports.sendRefresh = sendRefresh;
+module.exports.logOutremoveSockets = logOutremoveSockets;
 //------------------------------------------------------------------------------

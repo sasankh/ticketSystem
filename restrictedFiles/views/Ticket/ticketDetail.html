@@ -1,12 +1,22 @@
 <div class="container">
-  <accordion>
+  <accordion ng-if="!editOn">
     <accordion-group style="text-align:center" heading={{ticket.ticketTitle}} is-open=true>
       <table style="width:100%">
+        <tr><td></td><td></td><td style="text-align:right;color:0099CC;cursor:pointer;background-color:white;border:none" ng-click="changeEditOn()">Edit</td></tr>
         <tr>
           <td>
             <table>
               <tr>
-                <td><label style="font-weight:normal;">Customer:&nbsp;{{ticket.customerName}}</label></td>
+                <td>
+                  <li class="dropdown" style="list-style-type: none;">
+                    <label style="font-weight:normal;">Customer:&nbsp;</label>
+                    <a class="dropdown-toggle" data-toggle="dropdown" style="cursor:pointer">{{ticket.customerName}}<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                      <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="openCustomerInfo(ticket.customerID)">Customer Detail</a></li>
+                      <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="emailCustomer(ticket.customerID, ticket._id, ticket.customerName)">Email Customer</a></li>
+                    </ul>
+                  </li>
+                </td>
               </tr>
               <tr>
                 <td>
@@ -15,15 +25,39 @@
               </tr>
               <tr>
                 <td>
-                  <label style="font-weight:normal;">Ticket Location:&nbsp;{{ticket.ticketLocation}}</label>
+                  <label style="font-weight:normal;">Ticket Venue:&nbsp;{{ticket.ticketLocation}}</label>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td>
+            <table>
+              <tr>
+                <td>
+                  <label style="font-weight:normal;">Ticket Status:&nbsp;{{ticket.ticketState}}</label>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <table style="width:100%">
-                    <tr><td><label style="font-weight:normal;">Short Description:</label></td></tr>
-                    <tr><td>&nbsp;&nbsp;&nbsp;{{ticket.shortDescription}}</td></tr>
-                  </table>
+                  <label ng-if="ticket.priority=='1'"style="font-weight:normal;">Priority:&nbsp;Urgent</label>
+                  <label ng-if="ticket.priority=='2'"style="font-weight:normal;">Priority:&nbsp;High</label>
+                  <label ng-if="ticket.priority=='3'"style="font-weight:normal;">Priority:&nbsp;Medium</label>
+                  <label ng-if="ticket.priority=='4'"style="font-weight:normal;">Priority:&nbsp;Low</label>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label style="font-weight:normal;">Ticket Type:&nbsp;{{ticket.type}}</label>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label style="font-weight:normal;">Creator:&nbsp;{{ticket.creatorName}}</label>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label style="font-weight:normal;">Date Created:&nbsp;{{ticket.creationDate | date:'mediumDate'}}</label>
                 </td>
               </tr>
             </table>
@@ -38,37 +72,25 @@
               </tr>
               <tr>
                 <td>
-                  <label style="font-weight:normal;">Ticket Status:&nbsp;{{ticket.ticketState}}</label>
-                </td>
-              </tr>
-              <tr>
-                <td>
                   <label style="font-weight:normal;">Assigned Team:&nbsp;{{ticket.assignedTeam}}</label>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <label ng-if="ticket.priority=='1'"style="font-weight:normal;">Priority:&nbsp;Urgent</label>
-                  <label ng-if="ticket.priority=='2'"style="font-weight:normal;">Priority:&nbsp;High</label>
-                  <label ng-if="ticket.priority=='3'"style="font-weight:normal;">Priority:&nbsp;Medium</label>
-                  <label ng-if="ticket.priority=='4'"style="font-weight:normal;">Priority:&nbsp;Low</label>
+                  <label style="font-weight:normal;">Hold Request To:&nbsp;{{ticket.assignTo}}</label>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <label style="font-weight:normal;">Resolve Level:&nbsp;{{ticket.level}}</label>
+                  <label style="font-weight:normal;">Due Date:&nbsp;{{ticket.dDate | date:'mediumDate'}}</label>
                 </td>
               </tr>
-              <tr>
-                <td>
-                  <label style="font-weight:normal;">Ticket Type:&nbsp;{{ticket.type}}</label>
-                </td>
-              </tr>
+              <tr><td>&nbsp;</td></tr>
               <tr>
                 <td class="dropdown">
                   <button class="btn" type="button" id="menu1" data-toggle="dropdown">Action <span class="caret"></span></button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
-                    <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="edit(ticket._id)">Edit Ticket</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="changeEditOn()">Edit Ticket</a></li>
                     <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="openCustomerInfo(ticket.customerID)">Customer Detail</a></li>
                     <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="emailCustomer(ticket.customerID, ticket._id, ticket.customerName)">Email Customer</a></li>
                     <li ng-if="(ticket.ticketState == 'To be approved' && member.indexOf(ticket.assignedTeam) > -1 && leads.indexOf(ticket.assignedTeam) > -1)" role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="approveTransfer(ticket._id, ticket.assignTo)">Approve Transfer</a></li>
@@ -93,32 +115,150 @@
     </accordion-group>
     <accordion close-others=false>
       <accordion-group heading="Detail Description" is-open=true>
-        {{ticket.detailDescription}}
-      </accordion-group>
-    </accordion>
-    <accordion close-others=false ng-if="ticket.active">
-      <accordion-group heading="Add Log" is-open=true>
-        <div>
-          <form name="newTicketLog">
-            <table>
-              <tr><td><textarea class="form-control custom-control" rows="8" cols="200" ng-model="logData.content" required></textarea></tr></td>
-              <tr><td>&nbsp;</td></tr>
-              <tr><td>
-                <label style="font-weight:normal;">Notify cutomer of the update (Will also be visible to customer)&nbsp;</label>
-                <input type="checkbox" ng-model="logData.customerNotifyLog" ng-true-value="true" ng-false-value="false">
-              </td></tr>
-              <tr><td ng-if="!logData.customerNotifyLog">
-                <label style="font-weight:normal;">Make the log visible to customer&nbsp;</label>
-                <input type="checkbox" ng-model="logData.customerVisibleLog" ng-true-value="true" ng-false-value="false">
-              </td></tr>
-              <tr><td>&nbsp;</td></tr>
-              <tr><td><button class="btn" ng-disabled="newTicketLog.$invalid" ng-click="addToLog()">Add</button></tr></td>
-            </table>
-          </form>
-        </div>
+        <div ta-bind ng-model="ticket.detailDescription"></div>
       </accordion-group>
     </accordion>
   </accordion>
+  <accordion ng-if="editOn">
+    <accordion-group heading="Edit Ticket" is-open=true>
+      <div>
+        <form name="ticketForm">
+          <button class="btn" ng-disabled="ticketForm.$invalid" ng-click="updateTicket()">Update Ticket</button>
+          <button class="btn" ng-click="undoEdit()">Undo All</button>
+          <button class="btn" ng-click="cancelEdit()">Cancel</button>
+        </br>
+      </br>
+      <table>
+        <tr>
+          <td>
+            <label style="font-weight:normal;">Customer<span style="color:red;">*</span></label>
+            <div>
+              <input style="width:86%; float:left" ng-model="ticketEdit.customerName" placeholder="Customer" class="form-control" readonly required><button style="float:right" class='btn' ng-click="selectUser()">Select Customer</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="float:left; width:49%">
+              <label style="font-weight:normal;">Customer Email<span style="color:red;">*</span></label>
+              <input ng-model="ticketEdit.email" placeholder="Email" class="form-control" readonly required>
+            </div>
+            <div style="float:right; width:49%">
+              <label style="font-weight:normal;">Customer Number<span style="color:red;">*</span></label>
+              <input ng-model="ticketEdit.number" placeholder="Number" class="form-control" readonly required>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="float:left; width:49%">
+              <label style="font-weight:normal;">Customer Title<span style="color:red;">*</span></label>
+              <input ng-model="ticketEdit.title" placeholder="Title" class="form-control" readonly required>
+            </div>
+            <div style="float:right; width:49%">
+              <label style="font-weight:normal;">Customer Location<span style="color:red;">*</span></label>
+              <input ng-model="ticketEdit.location" placeholder="Location" class="form-control" readonly required>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="float:left; width:49%">
+              <label style="font-weight:normal;">Prefered Contact Method<span style="color:red;">*</span></label>
+              <select class="form-input" ng-model="ticketEdit.contactMethod" required>
+                <option value="None">None</option>
+                <option value="Email">Email</option>
+                <option value="Phone">Phone</option>
+                <option value="In Person">In Person</option>
+              </select>
+            </div>
+          </td>
+        </tr>
+        <tr><td></br></td></tr>
+        <tr><td class="inSeperator"></td></tr>
+        <tr><td></br></td></tr>
+        <tr>
+          <td>
+            <label style="font-weight:normal;">Ticket Subject<span style="color:red;">*</span></label>
+            <input class="form-input"  placeholder="Enter online ticket subject" ng-model="ticketEdit.ticketTitle" required>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="float:left; width:49%">
+              <label style="font-weight:normal;">Ticket Type<span style="color:red;">*</span></label>
+              <select class="form-input" ng-model="ticketEdit.type" required>
+                <option value="Internal Project">Internal</option>
+                <option value="External Project">External</option>
+              </select>
+            </div>
+            <div style="float:right; width:49%">
+              <label style="font-weight:normal;">Priority<span style="color:red;">*</span></label>
+              <select class="form-input" ng-model="ticketEdit.priority" required>
+                <option value=4>Low</option>
+                <option value=3>Medium</option>
+                <option value=2>High</option>
+                <option value=1>Urgent</option>
+              </select>
+            </div>
+          </td>
+        </tr>
+        <tr ng-if="systemTicketOptions.ticketSettings.ticketDueDate">
+          <td>
+            <label style="font-weight:normal;">Due Date<span style="color:red;">*</span></label>
+            <div class="input-group">
+              <input type="date" class="form-control" readonly="readonly" show-weeks="false" datepicker-popup ng-model="ticketEdit.dDate" is-open="opened" show-button-bar="false" required>
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default" ng-click="calenderOpen($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+              </span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td ng-if="systemTicketOptions.ticketSettings.ticketLocation">
+            <label style="font-weight:normal;">Venue<span style="color:red;">*</span></label>
+            <input class="form-input"  placeholder="Required" ng-model="ticketEdit.ticketLocation" required>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="form-group">
+              <label style="font-weight:normal;">Detail Description<span style="color:red;">*</span></label>
+              <text-angular ng-model="ticketEdit.detailDescription" required></text-angular>
+            </div>
+          </td>
+          <tr>
+          </table>
+        </br>
+        <button class="btn" ng-disabled="ticketForm.$invalid" ng-click="updateTicket()">Update Ticket</button>
+        <button class="btn" ng-click="undoEdit()">Undo All</button>
+        <button class="btn" ng-click="cancelEdit()">Cancel</button>
+      </form>
+    </div>
+  </accordion-group>
+</accordion>
+<accordion close-others=false ng-if="ticket.active">
+  <accordion-group heading="Add Log" is-open=true>
+    <div>
+      <form name="newTicketLog">
+        <table>
+          <tr><td><textarea class="form-control custom-control" rows="8" cols="200" ng-model="logData.content" required></textarea></tr></td>
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>
+            <label style="font-weight:normal;">Notify cutomer of the update (Will also be visible to customer)&nbsp;</label>
+            <input type="checkbox" ng-model="logData.customerNotifyLog" ng-true-value="true" ng-false-value="false">
+          </td></tr>
+          <tr><td ng-if="!logData.customerNotifyLog">
+            <label style="font-weight:normal;">Make the log visible to customer&nbsp;</label>
+            <input type="checkbox" ng-model="logData.customerVisibleLog" ng-true-value="true" ng-false-value="false">
+          </td></tr>
+          <tr><td>&nbsp;</td></tr>
+          <tr><td><button class="btn" ng-disabled="newTicketLog.$invalid" ng-click="addToLog()">Add</button></tr></td>
+        </table>
+      </form>
+    </div>
+  </accordion-group>
+</accordion>
 </div>
 <div class="container">
   <tabset>

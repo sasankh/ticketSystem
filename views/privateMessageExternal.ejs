@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title id="roomName">Open Chat Room</title>
-  <link rel="stylesheet" href='/rstylesheets/chatLook.css'>
-  <link rel='stylesheet' href='/rstylesheets/global.css'>
+  <title id="roomName"><%= room%></title>
+  <link rel='stylesheet' href='/rstylesheets/privatechatExternal.css'>
 </head>
 <body>
   <div class="chat">
-    <center><label style="font-size:24px">Open Chat Room</label></center>
-    <div style="font-size:17px"><label>&nbsp;&nbsp;You are: </label><input style="background-color:#636568; width:60%; border:none; color:#FFFFFF" type="text" class="chat-name" value=<%=controlUser%> readonly></div>
-    <textarea placeholder = "Type your message"></textarea>
-    <div class="chat-status" style="color:black;background-color:#BCBBBA;font-size:17px"><center>NEW MESSAGE AT TOP</center></div>
-    <div class="chat-messages" style="background-color:#BCBBBA;">
+    <div style = "font-size: 20px;">
+      <center><label id="From"><%= from%></label>&nbsp;<label>&</label>&nbsp;<label id="To"><%= to%></label></center>
     </div>
-    <div class="seperator"></div>
+    <textarea style="resize: none; height:35px; width:100%" placeholder = "Type your message"></textarea>
+    <div class="chat-status" style="color:black;font-size:17px"><center>NEW MESSAGE AT TOP</center></div>
+    <div class="chat-messages" style="width: 100%"></div>
     <script src="/socket/socket.io.js"></script>
     <script>
     (function(){
@@ -22,7 +20,6 @@
       }
 
       //Get requiredodes
-      chatName = getNode('.chat-name'),
       status = getNode('.chat-status'),
       messages = getNode('.chat-messages'),
       textarea = getNode('.chat textarea'),
@@ -39,7 +36,7 @@
       };
 
       try{
-        var connectTo = "https://localhost:443/publicChat";
+        var connectTo = "https://localhost:443/" + document.getElementById("roomName").innerHTML;
         console.log(connectTo);
         var socket = io.connect(connectTo);
       } catch(e){
@@ -53,15 +50,13 @@
           if(data.length){
             //loop through results
             for(var x = 0; x < data.length; x++){
-              if(data[x].type === "message"){
-                var message = document.createElement('div');
-                message.setAttribute('class', 'chat-message');
-                message.textContent = data[x].name + ": " + data[x].message;
+              var message = document.createElement('div');
+              message.setAttribute('class', 'chat-message');
+              message.textContent = data[x].name + ": " + data[x].message;
 
-                //Append
-                messages.appendChild(message);
-                messages.insertBefore(message, messages.firstChild);  //print in reverse order
-              }
+              //Append
+              messages.appendChild(message);
+              messages.insertBefore(message, messages.firstChild);  //print in reverse order
             }
           }
         });
@@ -74,23 +69,15 @@
           }
         });
 
-        //close window
-        socket.on('closeWindow', function(data){
-          if(data){
-            window.close();
-          }
-        });
-
         //listen for key down
         textarea.addEventListener('keydown', function(event){
           var self = this,
-          name = chatName.value;
+          name = document.getElementById("From").innerHTML;
 
           if(event.which === 13 && event.shiftKey === false){
             socket.emit('input',{
               name: name,
-              message: self.value,
-              type:"message"
+              message: self.value
             });
             event.preventDefault();
           }

@@ -1,0 +1,29 @@
+<div>
+  <div style="width:100%;">
+    <label style="font-weight:normal;width:100%">Search<input style="width:100%" class="form-search" type ="text" ng-model="search"></label>
+  </div>
+  </br>
+  <table class="table" style="text-align: center">
+    <thead>
+      <tr>
+        <th style="text-align: center">Team</th>
+        <th style="text-align: center">Team Leads</th>
+        <th style="text-align: center">Team Members</th>
+        <th style="text-align: center">Status</th>
+        <th style="text-align: center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="team in teamList | filter:search">
+        <td><button popover="Description: {{team.description}}" popover-placement="buttom" popover-trigger="mouseenter" style="cursor:default;background-color:white;border:none">{{team.name}}</button></td>
+        <td><ul ng-repeat="lead in team.leads" style="padding:0;margin:0;">{{lead.name}}</ul></td>
+        <td><ul ng-repeat="member in team.members" style="padding:0;margin:0;">{{member.name}}</ul></td>
+        <td ng-if="team.active">Active</td>
+        <td ng-if="!team.active">Disabled</td>
+        <td>
+          <button class="btn" type="button" ng-click="selectTeam(team._id, team.name)">Select</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

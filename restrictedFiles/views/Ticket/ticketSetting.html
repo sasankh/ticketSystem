@@ -1,6 +1,6 @@
 <div class="container">
   <accordion close-others=false>
-    <accordion-group heading="More Ticket View Options">
+    <accordion-group heading="Ticket List View Options">
       <form name="ticketViewForm">
         <table>
           <tr>
@@ -17,19 +17,13 @@
           </tr>
           <tr>
             <td>
-              <label style="font-weight:normal;">Level&nbsp;</label>
-              <input type="checkbox" ng-model="viewSettings.viewOptions.level" ng-true-value="true" ng-false-value="false">
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <label style="font-weight:normal;">Ticket Location&nbsp;</label>
+              <label style="font-weight:normal;">Ticket Venue&nbsp;</label>
               <input type="checkbox" ng-model="viewSettings.viewOptions.ticketLocation" ng-true-value="true" ng-false-value="false">
             </td>
           </tr>
           <tr>
             <td>
-              <label style="font-weight:normal;">Assignment Type&nbsp;</label>
+              <label style="font-weight:normal;">Assign Status&nbsp;</label>
               <input type="checkbox" ng-model="viewSettings.viewOptions.assignmentType" ng-true-value="true" ng-false-value="false">
             </td>
           </tr>
@@ -39,9 +33,47 @@
               <input type="checkbox" ng-model="viewSettings.viewOptions.contactMethod" ng-true-value="true" ng-false-value="false">
             </td>
           </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Ticket Due Date&nbsp;</label>
+              <input type="checkbox" ng-model="viewSettings.viewOptions.dueDate" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
         </table>
       </br>
         <button class="btn" ng-click="saveDisplayOption()">Save</button>
+      </form>
+    </accordion-group>
+    <accordion-group heading="System Ticket Options">
+      <form name="ticketOptionForm">
+        <table>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Enable 'OPEN (Any individual can grab the ticket)' in Assign Team &nbsp;</label>
+              <input type="checkbox" ng-model="systemTicketOptions.ticketSettings.openToAll" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Enable 'Open Ticket (Anyone in the team can grab the ticket)' in Assignment Type&nbsp;</label>
+              <input type="checkbox" ng-model="systemTicketOptions.ticketSettings.openInTeam" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Enable Ticket Due Date selection&nbsp;</label>
+              <input type="checkbox" ng-model="systemTicketOptions.ticketSettings.ticketDueDate" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label style="font-weight:normal;">Enable Ticket Venue Input&nbsp;</label>
+              <input type="checkbox" ng-model="systemTicketOptions.ticketSettings.ticketLocation" ng-true-value="true" ng-false-value="false">
+            </td>
+          </tr>
+        </table>
+      </br>
+        <button class="btn" ng-click="saveTicketSettings()">Save</button>
       </form>
     </accordion-group>
   </accordion>

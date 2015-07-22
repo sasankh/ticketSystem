@@ -4,17 +4,43 @@
     <button class='btn' ng-click="openAddUser()">New Customer</button>
     <button class="btn" ng-click="clear()">Clear All</button>
     <button class="btn" ng-click="cancel()">Cancel</button>
-    </br></br>
-    <table>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Customer<span style="color:red;">*</span></label>
-          <input ng-model="ticket.customerName" placeholder="Customer" class="form-control" readonly required>
-        </td>
-        <td>&nbsp;&nbsp;<button class='btn' ng-click="selectUser()">Select Customer</button></br></td>
-      </tr>
-      <tr>
-        <td>
+  </br></br>
+  <table>
+    <tr>
+      <td>
+        <label style="font-weight:normal;">Customer<span style="color:red;">*</span></label>
+        <div>
+          <input style="width:86%; float:left" ng-model="ticket.customerName" placeholder="Customer" class="form-control" readonly required><button style="float:right" class='btn' ng-click="selectUser()">Select Customer</button>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div style="float:left; width:49%">
+          <label style="font-weight:normal;">Customer Email<span style="color:red;">*</span></label>
+          <input ng-model="ticket.email" placeholder="Email" class="form-control" readonly required>
+        </div>
+        <div style="float:right; width:49%">
+          <label style="font-weight:normal;">Customer Number<span style="color:red;">*</span></label>
+          <input ng-model="ticket.number" placeholder="Number" class="form-control" readonly required>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div style="float:left; width:49%">
+          <label style="font-weight:normal;">Customer Title<span style="color:red;">*</span></label>
+          <input ng-model="ticket.title" placeholder="Title" class="form-control" readonly required>
+        </div>
+        <div style="float:right; width:49%">
+          <label style="font-weight:normal;">Customer Location<span style="color:red;">*</span></label>
+          <input ng-model="ticket.location" placeholder="Location" class="form-control" readonly required>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div style="float:left; width:49%">
           <label style="font-weight:normal;">Prefered Contact Method<span style="color:red;">*</span></label>
           <select class="form-input" ng-model="ticket.contactMethod" required>
             <option value="None">None</option>
@@ -22,124 +48,119 @@
             <option value="Phone">Phone</option>
             <option value="In Person">In Person</option>
           </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Notify Customer of the Ticket Creation?&nbsp;</label>
-          <input type="checkbox" ng-model="customerNotifyCreation" ng-true-value="true" ng-false-value="false">
-        </td>
-      </tr>
-      <tr><td></br></td></tr>
-      <tr><td class="inSeperator"></td></tr>
-      <tr><td></br></td></tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Assign Team<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.assignedTeam" required>
-            <option value="OPEN">OPEN (Any individual can grab the ticket)</option>
-            <option value="SELF">SELF (Assign ticket to myself)</option>
-            <option ng-repeat="team in teamList" value="{{team.value}}">{{team.display}}</option>
-          </select>
-        </td>
-      </tr>
-      <tr ng-if="ticket.assignedTeam != 'OPEN'">
-        <td>
-          <label style="font-weight:normal;">Assignment Type<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.assignmentType" required>
-            <option ng-if="ticket.assignedTeam == 'SELF'" value="SELF">Self Assigned</option>
-            <option ng-if="ticket.assignedTeam != 'SELF'" value="OPEN">Open Ticket (Anyone in the team can grab the ticket)</option>
-            <option ng-if="ticket.assignedTeam != 'SELF'" value="LEAD ASSIGNED">Need to be assigned by Team Manager\Lead</option>
-            <option ng-if="leadList.indexOf(ticket.assignedTeam) > -1" value="DIRECT ASSIGNMENT">Assign Directly to a member</option>
-          </select>
-        </td>
-      </tr>
-      <tr ng-if="ticket.assignmentType == 'DIRECT ASSIGNMENT'">
-        <td>
-          <label style="font-weight:normal;">Assign To<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.assignTo" required>
-            <option ng-repeat="member in teamList[leadList.indexOf(ticket.assignedTeam)].members" value="{{member.username}}">{{member.name}}</option>
-          </select>
-        </td>
-      </tr>
-      <tr><td></br></td></tr>
-      <tr><td class="inSeperator"></td></tr>
-      <tr><td></br></td></tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Ticket Type<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.type" required>
-            <option value="General">Normal</option>
-            <option value="Internal Project">Internal</option>
-            <option value="External Project">External</option>
-            <option value="Other">Project</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Priority<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.priority" required>
-            <option value=4>Low</option>
-            <option value=3>Medium</option>
-            <option value=2>High</option>
-            <option value=1>Urgent</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Resolve Level<span style="color:red;">*</span></label>
-          <select class="form-input" ng-model="ticket.level" required>
-            <option value="Level 1">Level 1</option>
-            <option value="Level 2">Level 2</option>
-            <option value="Level 3">Level 3</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Due Date<span style="color:red;">*</span></label>
-          <div class="input-group">
-            <input type="date" class="form-control" readonly="readonly" show-weeks="false" datepicker-popup ng-model="ticket.dDate" is-open="opened" show-button-bar="false" required>
-            <span class="input-group-btn">
-              <button type="button" class="btn btn-default" ng-click="calenderOpen($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-            </span>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Ticket Location<span style="color:red;">*</span></label>
-          <input class="form-input"  placeholder="Required" ng-model="ticket.ticketLocation" required>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label style="font-weight:normal;">Ticket Title<span style="color:red;">*</span></label>
-          <input class="form-input"  placeholder="Required" ng-model="ticket.ticketTitle" required>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <div class="form-group">
-            <label style="font-weight:normal;">Short description<span style="color:red;">*</span></label>
-            <textarea class="form-input" ng-model="ticket.shortDescription" required></textarea>
-          </div>
-        </td>
-      <tr>
-      <tr>
-        <td>
-          <div class="form-group">
-            <label style="font-weight:normal;">Detail Description<span style="color:red;">*</span></label>
-            <text-angular ng-model="ticket.detailDescription" required></text-angular>
-          </div>
-        </td>
-      <tr>
+        </div>
+        <div style="float:right; width:49%; padding-top:12px">
+        </br>
+        <label style="font-weight:normal;">Notify Customer of the Ticket Creation?&nbsp;</label>
+        <input type="checkbox" ng-model="customerNotifyCreation" ng-true-value="true" ng-false-value="false">
+      </div>
+    </td>
+  </tr>
+  <tr><td></br></td></tr>
+  <tr><td class="inSeperator"></td></tr>
+  <tr><td></br></td></tr>
+  <tr>
+    <td>
+      <label style="font-weight:normal;">Assign To<span style="color:red;">*</span></label>
+      <div>
+        <select class="form-input" ng-model="ticket.assignedTeam" style="width:86%; float:left" required>
+          <option ng-if="systemTicketOptions.ticketSettings.openToAll" value="OPEN">OPEN (Any individual can grab the ticket)</option>
+          <option value="SELF" ng-selected="ticket.assignedTeam == undefined" ng-init="ticket.assignedTeam = 'SELF'">SELF (Assign ticket to myself)</option>
+          <option ng-repeat="team in teamList" value="{{team.value}}">{{team.display}}</option>
+        </select>
+        <button style="float:right" class='btn' ng-click="selectTeam()">Select Team</button>
+      </div>
+    </td>
+  </tr>
+  <tr ng-if="ticket.assignedTeam != 'OPEN'">
+    <td>
+      <div style="float:left; width:49%">
+        <label style="font-weight:normal;">Assign Status<span style="color:red;">*</span></label>
+        <select class="form-input" ng-model="ticket.assignmentType" required>
+          <option ng-if="ticket.assignedTeam == 'SELF' || ticket.assignedTeam == undefined" value="SELF" ng-selected="ticket.assignedTeam == 'SELF' || ticket.assignedTeam == undefined" ng-init="ticket.assignmentType = 'SELF'">Self Assigned</option>
+          <option ng-if="ticket.assignedTeam != 'SELF' && systemTicketOptions.ticketSettings.openInTeam" value="OPEN">Open Ticket (Anyone in the team can grab the ticket)</option>
+          <option ng-if="ticket.assignedTeam != 'SELF' && leadList.indexOf(ticket.assignedTeam) < 0 && ticket.assignedTeam != undefined" value="LEAD ASSIGNED" ng-selected="leadList.indexOf(ticket.assignedTeam) < 0" ng-init="ticket.assignmentType = 'LEAD ASSIGNED'">Need to be assigned by team lead</option>
+          <option ng-if="leadList.indexOf(ticket.assignedTeam) > -1" value="LEAD ASSIGNED">Assign Later</option>
+          <option ng-if="leadList.indexOf(ticket.assignedTeam) > -1" value="DIRECT ASSIGNMENT" ng-selected="leadList.indexOf(ticket.assignedTeam) > -1" ng-init="ticket.assignmentType = 'DIRECT ASSIGNMENT'">Assign to a member right now</option>
+        </select>
+      </div>
+      <div style="float:right; width:49%" ng-if="ticket.assignmentType == 'SELF'">
+        <label style="font-weight:normal;">My Teams<span style="color:red;">*</span></label>
+        <select class="form-input" ng-model="ticket.selfTeam" required>
+          <option value="SELF" ng-selected="ticket.assignmentType == 'SELF'" ng-init="ticket.selfTeam = 'Individual'">Individual</option>
+          <option ng-repeat="userTeam in controlUserTeams" value="{{userTeam}}">{{userTeam}}</option>
+        </select>
+      </div>
+    </td>
+  </tr>
+  <tr ng-if="ticket.assignmentType == 'DIRECT ASSIGNMENT'">
+    <td>
+      <div style="float:left; width:49%">
+        <label style="font-weight:normal;">Assign Member<span style="color:red;">*</span></label>
+        <select class="form-input" ng-model="ticket.assignTo" required>
+          <option ng-repeat="member in teamList[leadList.indexOf(ticket.assignedTeam)].members" value="{{member.username}}">{{member.name}}</option>
+        </select>
+      </div>
+    </td>
+  </tr>
+  <tr><td></br></td></tr>
+  <tr><td class="inSeperator"></td></tr>
+  <tr><td></br></td></tr>
+  <tr>
+    <td>
+      <label style="font-weight:normal;">Ticket Subject<span style="color:red;">*</span></label>
+      <input class="form-input"  placeholder="Enter online ticket subject" ng-model="ticket.ticketTitle" required>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div style="float:left; width:49%">
+        <label style="font-weight:normal;">Ticket Type<span style="color:red;">*</span></label>
+        <select class="form-input" ng-model="ticket.type" required>
+          <option value="Internal Project">Internal</option>
+          <option value="External Project">External</option>
+        </select>
+      </div>
+      <div style="float:right; width:49%">
+        <label style="font-weight:normal;">Priority<span style="color:red;">*</span></label>
+        <select class="form-input" ng-model="ticket.priority" required>
+          <option value=4>Low</option>
+          <option value=3>Medium</option>
+          <option value=2>High</option>
+          <option value=1>Urgent</option>
+        </select>
+      </div>
+    </td>
+  </tr>
+  <tr ng-if="systemTicketOptions.ticketSettings.ticketDueDate">
+    <td>
+      <label style="font-weight:normal;">Due Date<span style="color:red;">*</span></label>
+      <div class="input-group">
+        <input type="date" class="form-control" readonly="readonly" show-weeks="false" datepicker-popup ng-model="ticket.dDate" is-open="opened" show-button-bar="false" required>
+        <span class="input-group-btn">
+          <button type="button" class="btn btn-default" ng-click="calenderOpen($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+        </span>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td ng-if="systemTicketOptions.ticketSettings.ticketLocation">
+      <label style="font-weight:normal;">Venue<span style="color:red;">*</span></label>
+      <input class="form-input"  placeholder="Required" ng-model="ticket.ticketLocation" required>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div class="form-group">
+        <label style="font-weight:normal;">Detail Description<span style="color:red;">*</span></label>
+        <text-angular ng-model="ticket.detailDescription" required></text-angular>
+      </div>
+    </td>
+    <tr>
     </table>
-    </br>
-    <button class="btn" ng-disabled="ticketForm.$invalid" ng-click="addTicket()">Add Ticket</button>
-    <button class="btn" ng-click="clear()">Clear All</button>
-    <button class="btn" ng-click="cancel()">Cancel</button>
-  </form>
+  </br>
+  <button class="btn" ng-disabled="ticketForm.$invalid" ng-click="addTicket()">Add Ticket</button>
+  <button class="btn" ng-click="clear()">Clear All</button>
+  <button class="btn" ng-click="cancel()">Cancel</button>
+</form>
 </div>

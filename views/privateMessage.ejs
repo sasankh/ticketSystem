@@ -11,7 +11,10 @@
       <table style="width:100%">
         <tr>
           <td style="text-align:right;width:68%;"><label id="From"><%= from%></label>&nbsp;<label>&</label>&nbsp;<label id="To"><%= to%></label></td>
-          <td style="width:32%;text-align:right;"><button style="border:none; margin:none;background-color: #BCBBBA;" onclick="window.top.closeiFrame(window.frameElement.id)">X</button></td>
+          <td style="width:32%;text-align:right;">
+            <button style="border:none; margin:none;background-color: #BCBBBA;float:right;padding:0" onclick="window.top.closeiFrame(window.frameElement.id)">X</button>
+            <button style="border:none; margin:none;background-color: #BCBBBA;float:right; padding:0" onclick="openWindow()">&#9634</button>
+          </td>
         </tr>
       </table>
     </div>
@@ -90,6 +93,11 @@
         });
       }
     })();
+
+    var openWindow = function(){
+      var link = '/privateMessageExternal/' + document.getElementById("roomName").innerHTML;
+      window.open(link, '_blank', 'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400');
+    }
     </script>
   </div>
 </body>
