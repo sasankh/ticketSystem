@@ -223,6 +223,9 @@ for(var x = 0; x < onlineUserList.length; x++){
   }
 }
 
+getOnlineUsers(function(usersOnline){
+  publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
+});
 //----------------------------------------------------------------------
 /*------------------------------old code--------------------------------
    for(var x = 0; x < onlineUserList.length; x++){
