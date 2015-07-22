@@ -78,10 +78,9 @@ function publicChat(publicChat){
 
       socket.on('disconnect', function(){
         checkRemoveSocketInfo(socket, function(){
-  //        getOnlineUsers(function(usersOnline){
-  //          publicChat.emit('output',[{name: "SERVER", message: socket.client.request.user.username + " logged off", type:"message"}]);
-  //          publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
-  //        });
+          getOnlineUsers(function(usersOnline){
+            publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
+          });
         });
       });
     });
@@ -223,10 +222,6 @@ for(var x = 0; x < onlineUserList.length; x++){
     break;
   }
 }
-getOnlineUsers(function(usersOnline){
-  publicChat.emit('output',[{name: "SERVER", message: user + " logged off", type:"message"}]);
-  publicChat.emit('output',[{users: usersOnline, type:"onlineUsers"}]);
-});
 
 //----------------------------------------------------------------------
 /*------------------------------old code--------------------------------
