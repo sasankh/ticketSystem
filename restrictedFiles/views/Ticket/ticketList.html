@@ -86,7 +86,7 @@
             <th style="text-align: center">State</th>
             <th style="text-align: center">Priority</th>
             <th style="text-align: center" ng-if="viewOptions.ticketLocation">Venue</th>
-            <th style="text-align: center" ng-if="viewOptions.assignmentType">Assignment Type</th>
+            <th style="text-align: center" ng-if="viewOptions.assignmentType">Assign Status</th>
             <th style="text-align: center" ng-if="viewOptions.creatorName">Creator</th>
             <th style="text-align: center" ng-if="viewOptions.creationDate">Creation Date</th>
             <th style="text-align: center" ng-if="viewOptions.dueDate">Due Date</th>
@@ -95,10 +95,18 @@
         </thead>
         <tbody>
           <tr ng-repeat="ticket in listTicket" ng-if="ticket.holderName == controlUser">
-            <td><button popover={{ticket.detailDescription}} popover-placement="right" popover-trigger="mouseenter" style="color:0099FF;cursor:pointer;background-color:white;border:none">{{ticket.ticketTitle}}</button></td>
+            <td><button style="color:0099CC;cursor:pointer;background-color:white;border:none" ng-click="details(ticket._id)">{{ticket.ticketTitle}}</button></td>
             <td>{{ticket.assignTo}}</td>
             <td>{{ticket.assignedTeam}}</td>
-            <td>{{ticket.customerName}}</td>
+            <td>
+              <li class="dropdown" style="list-style-type: none;">
+                <a class="dropdown-toggle" data-toggle="dropdown" style="cursor:pointer">{{ticket.customerName}}<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="openCustomerInfo(ticket.customerID)">Customer Detail</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="emailCustomer(ticket.customerID, ticket._id, ticket.customerName)">Email Customer</a></li>
+                </ul>
+              </li>
+            </td>
             <td ng-if="viewOptions.contactMethod">{{ticket.contactMethod}}</td>
             <td>{{ticket.ticketState}}</td>
             <td ng-if="ticket.priority=='1'"style="font-weight:normal;">Urgent</td>
@@ -152,7 +160,7 @@
             <th style="text-align: center">State</th>
             <th style="text-align: center">Priority</th>
             <th style="text-align: center" ng-if="viewOptions.ticketLocation">Venue</th>
-            <th style="text-align: center" ng-if="viewOptions.assignmentType">Assignment Type</th>
+            <th style="text-align: center" ng-if="viewOptions.assignmentType">Assign Status</th>
             <th style="text-align: center" ng-if="viewOptions.creatorName">Creator</th>
             <th style="text-align: center" ng-if="viewOptions.creationDate">Creation Date</th>
             <th style="text-align: center" ng-if="viewOptions.dueDate">Due Date</th>
@@ -161,11 +169,19 @@
         </thead>
         <tbody>
           <tr ng-repeat="ticket in listTicket" ng-if="member.indexOf(ticket.assignedTeam) > -1">
-            <td><button popover={{ticket.detailDescription}} popover-placement="right" popover-trigger="mouseenter" style="color:3399FF;cursor:pointer;background-color:white;border:none">{{ticket.ticketTitle}}</button></td>
+            <td><button style="color:0099CC;cursor:pointer;background-color:white;border:none" ng-click="details(ticket._id)">{{ticket.ticketTitle}}</button></td>
             <td>{{ticket.holderName}}</td>
             <td>{{ticket.assignTo}}</td>
             <td>{{ticket.assignedTeam}}</td>
-            <td>{{ticket.customerName}}</td>
+            <td>
+              <li class="dropdown" style="list-style-type: none;">
+                <a class="dropdown-toggle" data-toggle="dropdown" style="cursor:pointer">{{ticket.customerName}}<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="openCustomerInfo(ticket.customerID)">Customer Detail</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" style="cursor:pointer;" ng-click="emailCustomer(ticket.customerID, ticket._id, ticket.customerName)">Email Customer</a></li>
+                </ul>
+              </li>
+            </td>
             <td ng-if="viewOptions.contactMethod">{{ticket.contactMethod}}</td>
             <td>{{ticket.ticketState}}</td>
             <td ng-if="ticket.priority=='1'"style="font-weight:normal;">Urgent</td>
